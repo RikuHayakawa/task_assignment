@@ -1,0 +1,4 @@
+
+# Ignore build and bin directories
+build/
+bin/
