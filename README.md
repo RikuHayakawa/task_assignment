@@ -5,3 +5,34 @@ Referenece: Cohen, Reuven, Liran Katzir, and Danny Raz. "An efficient approximat
 
 Notes:
 1. For simplicity, variables in the classes are not well encapsulated.
+
+ビルド　make 
+クリア　make clean
+
+GAP入力例
+1. 4 3
+タスク数　ロボット数
+
+2. 2 3 4
+ロボットの充電容量
+
+3.  1 1 1
+    2 3 3
+    2 3 4
+    1 2 3
+各ロボットがタスクを実行する際の消費電力
+
+4.  3 1 5
+    1 1 1
+    5 15 25
+    25 15 5
+各ロボットがタスクを実行する際の利益（タスクの優先度）
+
+
+
+
+
+定義
+
+タスク：　ロボットが行う作業のこと。割当の際には消費電力とタスクの優先度の２つの項目を用いて評価を行う。
+ロボット：　自立移動型ロボット。個体によって初期充電と最大充電量が異なる
