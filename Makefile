@@ -6,12 +6,13 @@ RM = rm
 SRC_DIR = src
 INC_DIR = include
 BUILD_DIR = build
+BIN_DIR = bin
 
 # 各オブジェクトファイルのパスを指定
 DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o
 
 # 実行ファイルの名前
-TARGET = bin/gap
+TARGET = $(BIN_DIR)/gap
 
 # 各ソースファイルとオブジェクトファイルの対応を指定
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
@@ -23,6 +24,7 @@ all: $(TARGET)
 
 # 実行ファイルの生成ルール
 $(TARGET): $(SRC_DIR)/main.cpp $(DEPENDENCIES)
+	@mkdir -p $(BIN_DIR)
 	$(CXX) $(OPT) -I$(INC_DIR) -o $(TARGET) $(SRC_DIR)/main.cpp $(DEPENDENCIES)
 
 # 依存関係をすべてビルド
