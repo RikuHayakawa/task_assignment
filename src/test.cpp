@@ -34,7 +34,7 @@ namespace gap
             {
                 cout << "Case " << casenum << ":" << endl;
                 CKnapsack knapsack;
-                CBin bin(1, binsize);
+                CBin bin(1, binsize, 1); // todo: add max_size
                 knapsack.SetBin(bin);
                 for (int i = 0; i < itemnum; ++i)
                 {
@@ -75,45 +75,55 @@ namespace gap
          */
         ifstream file("test/testcaseforgap.txt");
         int casenum = 1, itemnum, binnum;
-        if (file.is_open())
+        if (!file.is_open())
         {
-            while (file >> itemnum >> binnum)
-            {
-                cout << "Case " << casenum << ":" << endl;
-                CGap gap;
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    CItem item(i + 1, -1, -1);
-                    item.m_cost = -1;
-                    gap.AddItem(item);
-                }
-                for (int i = 0; i < binnum; ++i)
-                {
-                    int binsize;
-                    file >> binsize;
-                    CBin bin(i + 1, binsize);
-                    gap.AddBin(bin);
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    vector<int> line(binnum);
-                    for (int j = 0; j < binnum; ++j)
-                        file >> line[j];
-                    gap.m_sizematrix.push_back(line);
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    vector<int> line(binnum);
-                    for (int j = 0; j < binnum; ++j)
-                        file >> line[j];
-                    gap.m_profitmatrix.push_back(line);
-                }
-                gap.Print();
-                cout << endl;
-                gap.Approximate();
-                ++casenum;
-            }
-            file.close();
+            throw "File not found!";
         }
+
+        while (file >> itemnum >> binnum)
+        {
+            cout << "Case " << casenum << ":" << endl;
+            CGap gap;
+            for (int i = 0; i < itemnum; ++i)
+            {
+                CItem item(i + 1, -1, -1);
+                item.m_cost = -1;
+                gap.AddItem(item);
+            }
+            vector<int> sizes(binnum);
+            for (int i = 0; i < binnum; ++i)
+            {
+                file >> sizes[i];
+            }
+            vector<int> max_sizes(binnum);
+            for (int i = 0; i < binnum; ++i)
+            {
+                file >> max_sizes[i];
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                CBin bin(i + 1, sizes[i], max_sizes[i]);
+                gap.AddBin(bin);
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                vector<int> line(binnum);
+                for (int j = 0; j < binnum; ++j)
+                    file >> line[j];
+                gap.m_sizematrix.push_back(line);
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                vector<int> line(binnum);
+                for (int j = 0; j < binnum; ++j)
+                    file >> line[j];
+                gap.m_profitmatrix.push_back(line);
+            }
+            gap.Print();
+            cout << endl;
+            gap.Approximate();
+            ++casenum;
+        }
+        file.close();
     }
 };
