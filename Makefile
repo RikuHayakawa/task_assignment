@@ -38,3 +38,7 @@ clean:
 # 個別ファイルを削除するためのターゲット
 clean-objects:
 	$(RM) -f $(BUILD_DIR)/*.o
+
+# テスト実行
+test: $(TARGET)
+	$(TARGET)
