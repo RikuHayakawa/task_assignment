@@ -1,8 +1,8 @@
-/** 
+/**
  * gap.h
  * Author: Zhiyang Su
  * Created on 2014-08-10.
- */ 
+ */
 
 #ifndef GAP_H
 #define GAP_H
@@ -18,25 +18,27 @@ using namespace std;
  */
 namespace gap
 {
-class CGap
-{
-public:
-    vector<vector<int> > m_sizematrix;
-    vector<vector<int> > m_profitmatrix;
-    vector<CItem> m_items;
-    vector<CBin> m_bins;
-    int m_maxprofit;
-public:
-    CGap();
-    ~CGap();
+    class CGap
+    {
+    public:
+        vector<vector<int>> m_sizematrix;
+        vector<vector<int>> m_profitmatrix;
+        vector<vector<int>> m_timematrix;
+        vector<CItem> m_items;
+        vector<CBin> m_bins;
+        int m_maxprofit;
 
-    void AddItem(CItem &item);
-    void AddBin(CBin &bin);
-    
-    void Approximate();
-    void Print();
-    void PrintAssignment(); // The result is stored in each item object
-};
+    public:
+        CGap();
+        ~CGap();
+
+        void AddItem(CItem &item);
+        void AddBin(CBin &bin);
+
+        void Approximate();
+        void Print();
+        void PrintAssignment(); // The result is stored in each item object
+    };
 };
 
 #endif
