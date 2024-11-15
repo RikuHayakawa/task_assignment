@@ -32,6 +32,11 @@ namespace gap
         m_bins.push_back(bin);
     }
 
+    void CGap::AddStation(CStation &station)
+    {
+        m_stations.push_back(station);
+    }
+
     void CGap::Approximate()
     {
         for (int j = 0; j < m_bins.size(); ++j)
@@ -76,6 +81,10 @@ namespace gap
         cout << "Bins (id, size):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)
             cout << m_bins[i].m_id << "," << m_bins[i].m_size << " ";
+        cout << endl;
+        cout << "Stations (id, charge_efficiency):" << endl;
+        for (int i = 0; i < m_stations.size(); ++i)
+            cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
         cout << endl;
         cout << "Size matrix:" << endl;
         for (int i = 0; i < m_sizematrix.size(); ++i)

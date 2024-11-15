@@ -10,6 +10,7 @@
 #include <vector>
 #include "item.h"
 #include "bin.h"
+#include "station.h"
 
 using namespace std;
 
@@ -26,6 +27,7 @@ namespace gap
         vector<vector<int>> m_timematrix;
         vector<CItem> m_items;
         vector<CBin> m_bins;
+        vector<CStation> m_stations;
         int m_maxprofit;
 
     public:
@@ -34,6 +36,7 @@ namespace gap
 
         void AddItem(CItem &item);
         void AddBin(CBin &bin);
+        void AddStation(CStation &station);
 
         void Approximate();
         void Print();

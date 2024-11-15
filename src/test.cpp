@@ -80,13 +80,13 @@ namespace gap
          * --------------------------------------
          */
         ifstream file("test/testcaseforgap.txt");
-        int casenum = 1, itemnum, binnum;
+        int casenum = 1, itemnum, binnum, stationnum;
         if (!file.is_open())
         {
             throw "File not found!";
         }
 
-        while (file >> itemnum >> binnum)
+        while (file >> itemnum >> binnum >> stationnum)
         {
             cout << "Case " << casenum << ":" << endl;
             CGap gap;
@@ -110,6 +110,13 @@ namespace gap
             {
                 CBin bin(i + 1, sizes[i], max_sizes[i]);
                 gap.AddBin(bin);
+            }
+            vector<int> charge_efficiencies(stationnum);
+            for (int i = 0; i < stationnum; ++i)
+            {
+                file >> charge_efficiencies[i];
+                CStation station(i + 1, charge_efficiencies[i]);
+                gap.AddStation(station);
             }
             for (int i = 0; i < itemnum; ++i)
             {
