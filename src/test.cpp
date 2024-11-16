@@ -111,12 +111,19 @@ namespace gap
                 CBin bin(i + 1, sizes[i], max_sizes[i]);
                 gap.AddBin(bin);
             }
-            vector<int> charge_efficiencies(stationnum);
             for (int i = 0; i < stationnum; ++i)
             {
-                file >> charge_efficiencies[i];
-                CStation station(i + 1, charge_efficiencies[i]);
+                int charge_efficiency;
+                file >> charge_efficiency;
+                CStation station(i + 1, charge_efficiency);
                 gap.AddStation(station);
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                int charging_time;
+                file >> charging_time;
+                CCharging charging(i + 1, charging_time, -1, -1);
+                gap.AddCharging(charging);
             }
             for (int i = 0; i < itemnum; ++i)
             {
@@ -138,13 +145,6 @@ namespace gap
                 for (int j = 0; j < binnum; ++j)
                     file >> line[j];
                 gap.m_timematrix.push_back(line);
-            }
-            for (int i = 0; i < binnum; ++i)
-            {
-                int charging_time;
-                file >> charging_time;
-                CCharging charging(i + 1, charging_time, -1, -1);
-                gap.AddCharging(charging);
             }
 
             gap.Print();

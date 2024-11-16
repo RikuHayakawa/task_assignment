@@ -83,13 +83,19 @@ namespace gap
         for (int i = 0; i < m_items.size(); ++i)
             cout << m_items[i].m_id << " ";
         cout << endl;
-        cout << "Bins (id, size):" << endl;
+        cout << "Bins (id, size, max_size):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)
-            cout << m_bins[i].m_id << "," << m_bins[i].m_size << " ";
+            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << " ";
         cout << endl;
         cout << "Stations (id, charge_efficiency):" << endl;
         for (int i = 0; i < m_stations.size(); ++i)
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
+        cout << endl;
+        cout << "Chargings (id, time) :" << endl;
+        for (int i = 0; i < m_chargings.size(); ++i)
+        {
+            cout << m_chargings[i].m_id << "," << m_chargings[i].m_time << " ";
+        }
         cout << endl;
         cout << "Size matrix:" << endl;
         for (int i = 0; i < m_sizematrix.size(); ++i)
@@ -111,11 +117,6 @@ namespace gap
             for (int j = 0; j < m_timematrix[0].size(); ++j)
                 cout << m_timematrix[i][j] << " ";
             cout << endl;
-        }
-        cout << "Charging time:" << endl;
-        for (int i = 0; i < m_chargings.size(); ++i)
-        {
-            cout << m_chargings[i].m_id << "," << m_chargings[i].m_time << " ";
         }
     }
 
