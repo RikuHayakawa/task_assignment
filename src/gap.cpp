@@ -83,9 +83,9 @@ namespace gap
         for (int i = 0; i < m_items.size(); ++i)
             cout << m_items[i].m_id << " ";
         cout << endl;
-        cout << "Bins (id, size, max_size):" << endl;
+        cout << "Bins (id, size, max_size, energy_efficiency):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)
-            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << " ";
+            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << "," << m_bins[i].m_energy_efficiency << " ";
         cout << endl;
         cout << "Stations (id, charge_efficiency):" << endl;
         for (int i = 0; i < m_stations.size(); ++i)

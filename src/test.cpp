@@ -34,7 +34,7 @@ namespace gap
             {
                 cout << "Case " << casenum << ":" << endl;
                 CKnapsack knapsack;
-                CBin bin(1, binsize, 1); // todo: add max_size
+                CBin bin(1, binsize, 1, 1);
                 knapsack.SetBin(bin);
                 for (int i = 0; i < itemnum; ++i)
                 {
@@ -100,9 +100,14 @@ namespace gap
             {
                 file >> max_sizes[i];
             }
+            vector<int> energy_efficiencies(binnum);
             for (int i = 0; i < binnum; ++i)
             {
-                CBin bin(i + 1, sizes[i], max_sizes[i]);
+                file >> energy_efficiencies[i];
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                CBin bin(i + 1, sizes[i], max_sizes[i], energy_efficiencies[i]);
                 gap.AddBin(bin);
             }
             for (int i = 0; i < stationnum; ++i)

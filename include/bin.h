@@ -15,10 +15,11 @@ namespace gap
         int m_id;
         int m_size;
         int m_max_size;
+        int m_energy_efficiency;
 
     public:
         CBin();
-        CBin(int id, int size, int max_size);
+        CBin(int id, int size, int max_size, int energy_efficiency);
         virtual ~CBin();
     };
 };
