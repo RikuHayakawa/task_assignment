@@ -8,7 +8,7 @@
 
 namespace gap
 {
-    CBin::CBin() : m_id(-1), m_size(-1)
+    CBin::CBin() : m_id(-1), m_size(-1), m_max_size(-1)
     {
     }
 

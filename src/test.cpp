@@ -40,7 +40,7 @@ namespace gap
                 {
                     int weight;
                     file >> weight;
-                    CItem item(i + 1, weight, -1, -1);
+                    CItem item(i + 1, weight, -1);
                     knapsack.AddItem(item);
                 }
                 for (int i = 0; i < itemnum; ++i)
@@ -48,12 +48,6 @@ namespace gap
                     int profit;
                     file >> profit;
                     knapsack.m_items[i].m_profit = profit;
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    int task_time;
-                    file >> task_time;
-                    knapsack.m_items[i].m_time = task_time;
                 }
                 knapsack.Print();
                 knapsack.Dp();
@@ -92,7 +86,7 @@ namespace gap
             CGap gap;
             for (int i = 0; i < itemnum; ++i)
             {
-                CItem item(i + 1, -1, -1, -1);
+                CItem item(i + 1, -1, -1);
                 item.m_cost = -1;
                 gap.AddItem(item);
             }
