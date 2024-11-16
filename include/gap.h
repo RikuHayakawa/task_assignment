@@ -11,6 +11,7 @@
 #include "item.h"
 #include "bin.h"
 #include "station.h"
+#include "charging.h"
 
 using namespace std;
 
@@ -28,6 +29,7 @@ namespace gap
         vector<CItem> m_items;
         vector<CBin> m_bins;
         vector<CStation> m_stations;
+        vector<CCharging> m_chargings;
         int m_maxprofit;
 
     public:
@@ -37,6 +39,7 @@ namespace gap
         void AddItem(CItem &item);
         void AddBin(CBin &bin);
         void AddStation(CStation &station);
+        void AddCharging(CCharging &charging);
 
         void Approximate();
         void Print();

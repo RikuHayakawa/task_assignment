@@ -37,6 +37,11 @@ namespace gap
         m_stations.push_back(station);
     }
 
+    void CGap::AddCharging(CCharging &charging)
+    {
+        m_chargings.push_back(charging);
+    }
+
     void CGap::Approximate()
     {
         for (int j = 0; j < m_bins.size(); ++j)
@@ -106,6 +111,11 @@ namespace gap
             for (int j = 0; j < m_timematrix[0].size(); ++j)
                 cout << m_timematrix[i][j] << " ";
             cout << endl;
+        }
+        cout << "Charging time:" << endl;
+        for (int i = 0; i < m_chargings.size(); ++i)
+        {
+            cout << m_chargings[i].m_id << "," << m_chargings[i].m_time << " ";
         }
     }
 

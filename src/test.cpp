@@ -139,6 +139,14 @@ namespace gap
                     file >> line[j];
                 gap.m_timematrix.push_back(line);
             }
+            for (int i = 0; i < binnum; ++i)
+            {
+                int charging_time;
+                file >> charging_time;
+                CCharging charging(i + 1, charging_time, -1, -1);
+                gap.AddCharging(charging);
+            }
+
             gap.Print();
             cout << endl;
             gap.Approximate();

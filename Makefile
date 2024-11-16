@@ -8,9 +8,10 @@ INC_DIR = include
 BUILD_DIR = build
 BIN_DIR = bin
 STATION_DIR = station
+CHARGING_DIR = charging
 
 # 各オブジェクトファイルのパスを指定
-DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o
+DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o $(BUILD_DIR)/charging.o
 
 # 実行ファイルの名前
 TARGET = $(BIN_DIR)/gap
