@@ -129,7 +129,7 @@ namespace gap
                 vector<int> line(binnum);
                 for (int j = 0; j < binnum; ++j)
                     file >> line[j];
-                gap.m_sizematrix.push_back(line);
+                gap.m_timematrix.push_back(line);
             }
             for (int i = 0; i < itemnum; ++i)
             {
@@ -138,14 +138,14 @@ namespace gap
                     file >> line[j];
                 gap.m_profitmatrix.push_back(line);
             }
+            // create size matrix by bin energy efficiency and item time
             for (int i = 0; i < itemnum; ++i)
             {
                 vector<int> line(binnum);
-                for (int j = 0; j < binnum; ++j)
-                    file >> line[j];
-                gap.m_timematrix.push_back(line);
+                for (int j = 0; j < gap.m_bins.size(); ++j)
+                    line[j] = gap.m_bins[j].m_energy_efficiency * gap.m_timematrix[i][j];
+                gap.m_sizematrix.push_back(line);
             }
-
             gap.Print();
             cout << endl;
             gap.Approximate();
