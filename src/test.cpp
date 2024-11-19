@@ -40,8 +40,8 @@ namespace gap
                 {
                     int weight;
                     file >> weight;
-                    CItem item(i + 1, weight, -1);
-                    knapsack.AddItem(item);
+                    // CItem item(i + 1, weight, -1);
+                    // knapsack.AddItem(item);
                 }
                 for (int i = 0; i < itemnum; ++i)
                 {
@@ -84,12 +84,6 @@ namespace gap
         {
             cout << "Case " << casenum << ":" << endl;
             CGap gap;
-            for (int i = 0; i < itemnum; ++i)
-            {
-                CItem item(i + 1, -1, -1);
-                item.m_cost = -1;
-                gap.AddItem(item);
-            }
             vector<int> sizes(binnum);
             for (int i = 0; i < binnum; ++i)
             {
@@ -124,12 +118,10 @@ namespace gap
                 CCharging charging(i + 1, charging_time, -1, -1);
                 gap.AddCharging(charging);
             }
+            int working_items[itemnum];
             for (int i = 0; i < itemnum; ++i)
             {
-                vector<int> line(binnum);
-                for (int j = 0; j < binnum; ++j)
-                    file >> line[j];
-                gap.m_timematrix.push_back(line);
+                file >> working_items[i];
             }
             for (int i = 0; i < itemnum; ++i)
             {
@@ -143,8 +135,14 @@ namespace gap
             {
                 vector<int> line(binnum);
                 for (int j = 0; j < gap.m_bins.size(); ++j)
-                    line[j] = gap.m_bins[j].m_energy_efficiency * gap.m_timematrix[i][j];
+                    line[j] = gap.m_bins[j].m_energy_efficiency * working_items[i];
                 gap.m_sizematrix.push_back(line);
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                CItem item(i + 1, -1, -1, working_items[i]);
+                item.m_cost = -1;
+                gap.AddItem(item);
             }
             gap.Print();
             cout << endl;

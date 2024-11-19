@@ -4,6 +4,17 @@
  * Created on 2014-08-10.
  */
 
+/**
+ * todo
+ * - アイテムに時間の概念を追加する（一度消したが、再度追加する）
+ * - 充電制約に必要な情報
+ * - ロボットと充電ステーションの関係、割り当てられているタスクの情報と実行時間、順序
+ * 　  bin model を拡張して、アイテムの割り当てられた順番を記録する（実行順にアイテムのidを記録する、時間はアイテムをたどればわかる）
+ * 　　例：　bin に　アイテム　itme_1, item_2, item_3 が割り当てられた場合  [item_1, item_2, item_3] 充電と区別するために、"item_"をつける.
+ *          充電の場合は、"charging_"をつける
+ * - Print
+ */
+
 #include "gap.h"
 #include "item.h"
 #include "bin.h"
@@ -79,9 +90,10 @@ namespace gap
 
     void CGap::Print()
     {
-        cout << "Items:" << endl;
+        cout << "Items(id, size, profit, time) : " << endl;
         for (int i = 0; i < m_items.size(); ++i)
-            cout << m_items[i].m_id << " ";
+            cout
+                << m_items[i].m_id << "," << m_items[i].m_weight << "," << m_items[i].m_profit << "," << m_items[i].m_workigtime << " ";
         cout << endl;
         cout << "Bins (id, size, max_size, energy_efficiency):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)

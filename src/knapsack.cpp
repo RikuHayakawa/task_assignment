@@ -39,7 +39,7 @@ namespace gap
         cout << "Items(id, weight, profit, time):" << endl;
         for (int i = 0; i < m_items.size(); ++i)
         {
-            cout << m_items[i].m_id << " " << m_items[i].m_weight << " " << m_items[i].m_profit << endl;
+            cout << m_items[i].m_id << " " << m_items[i].m_weight << " " << m_items[i].m_profit << " " << m_items[i].m_workigtime << endl;
         }
     }
 
