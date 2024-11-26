@@ -21,7 +21,7 @@ namespace gap
         virtual ~CBin();
 
         void removeAssignment(int pos);                            // Remove an assignment at specified position
-        void addAssignment(const std::string &name, const int id); // Add a new assignment (pair) example: ("task", 1)
+        void addAssignment(const std::string &name, const int id); // Add a new assignment (pair), example: ("task", 1)
         void swapAssignments(int startIndex, int endIndex);        // Swap two assignments
         void displayAssignments() const;                           // Display all assignments
     };

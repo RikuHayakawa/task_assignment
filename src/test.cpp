@@ -144,6 +144,7 @@ namespace gap
                 item.m_cost = -1;
                 gap.AddItem(item);
             }
+            file >> gap.constaint_time;
             gap.Print();
             cout << endl;
             gap.Approximate();

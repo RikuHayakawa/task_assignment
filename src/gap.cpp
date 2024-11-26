@@ -124,13 +124,9 @@ namespace gap
                 cout << m_profitmatrix[i][j] << " ";
             cout << endl;
         }
-        cout << "Time matrix:" << endl;
-        for (int i = 0; i < m_station_occupancy_matrix.size(); ++i)
-        {
-            for (int j = 0; j < m_station_occupancy_matrix[0].size(); ++j)
-                cout << m_station_occupancy_matrix[i][j] << " ";
-            cout << endl;
-        }
+        cout << "Constraint time:" << endl;
+        cout << constaint_time << endl;
+
     }
 
     void CGap::PrintAssignment()

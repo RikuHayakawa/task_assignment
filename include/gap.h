@@ -31,6 +31,7 @@ namespace gap
         vector<CStation> m_stations;
         vector<CCharging> m_chargings;
         int m_maxprofit;
+        int constaint_time;
 
     public:
         CGap();
