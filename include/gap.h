@@ -25,7 +25,7 @@ namespace gap
     public:
         vector<vector<int>> m_sizematrix;
         vector<vector<int>> m_profitmatrix;
-        vector<vector<int>> m_timematrix;
+        vector<vector<int>> m_station_occupancy_matrix;
         vector<CItem> m_items;
         vector<CBin> m_bins;
         vector<CStation> m_stations;
@@ -44,6 +44,7 @@ namespace gap
         void Approximate();
         void Print();
         void PrintAssignment(); // The result is stored in each item object
+        void SetAssignmentForRobots();
     };
 };
 

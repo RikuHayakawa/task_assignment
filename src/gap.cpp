@@ -86,6 +86,7 @@ namespace gap
             }
             PrintAssignment();
         }
+        SetAssignmentForRobots();
     }
 
     void CGap::Print()
@@ -124,10 +125,10 @@ namespace gap
             cout << endl;
         }
         cout << "Time matrix:" << endl;
-        for (int i = 0; i < m_timematrix.size(); ++i)
+        for (int i = 0; i < m_station_occupancy_matrix.size(); ++i)
         {
-            for (int j = 0; j < m_timematrix[0].size(); ++j)
-                cout << m_timematrix[i][j] << " ";
+            for (int j = 0; j < m_station_occupancy_matrix[0].size(); ++j)
+                cout << m_station_occupancy_matrix[i][j] << " ";
             cout << endl;
         }
     }
@@ -138,5 +139,21 @@ namespace gap
         for (int i = 0; i < m_items.size(); ++i)
             cout << m_items[i].m_id << "->" << m_items[i].m_assignedbinid << "  ";
         cout << endl;
+    }
+
+    void CGap::SetAssignmentForRobots()
+    {
+        for (int i = 0; i < m_items.size(); ++i)
+        {
+            if (m_items[i].m_assignedbinid != -1)
+            {
+                m_bins[m_items[i].m_assignedbinid - 1].addAssignment("task", m_items[i].m_id);
+            }
+        }
+        for (int i = 0; i < m_bins.size(); ++i)
+        {
+            cout << "Robot " << m_bins[i].m_id << " executes tasks:" << endl;
+            m_bins[i].displayAssignments();
+        }
     }
 };
