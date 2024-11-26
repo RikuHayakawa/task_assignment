@@ -1,8 +1,8 @@
-/** 
+/**
  * gap.h
  * Author: Zhiyang Su
  * Created on 2014-08-10.
- */ 
+ */
 
 #ifndef GAP_H
 #define GAP_H
@@ -10,6 +10,8 @@
 #include <vector>
 #include "item.h"
 #include "bin.h"
+#include "station.h"
+#include "charging.h"
 
 using namespace std;
 
@@ -18,25 +20,33 @@ using namespace std;
  */
 namespace gap
 {
-class CGap
-{
-public:
-    vector<vector<int> > m_sizematrix;
-    vector<vector<int> > m_profitmatrix;
-    vector<CItem> m_items;
-    vector<CBin> m_bins;
-    int m_maxprofit;
-public:
-    CGap();
-    ~CGap();
+    class CGap
+    {
+    public:
+        vector<vector<int>> m_sizematrix;
+        vector<vector<int>> m_profitmatrix;
+        vector<vector<int>> m_station_occupancy_matrix;
+        vector<CItem> m_items;
+        vector<CBin> m_bins;
+        vector<CStation> m_stations;
+        vector<CCharging> m_chargings;
+        int m_maxprofit;
+        int constaint_time;
 
-    void AddItem(CItem &item);
-    void AddBin(CBin &bin);
-    
-    void Approximate();
-    void Print();
-    void PrintAssignment(); // The result is stored in each item object
-};
+    public:
+        CGap();
+        ~CGap();
+
+        void AddItem(CItem &item);
+        void AddBin(CBin &bin);
+        void AddStation(CStation &station);
+        void AddCharging(CCharging &charging);
+
+        void Approximate();
+        void Print();
+        void PrintAssignment(); // The result is stored in each item object
+        void SetAssignmentForRobots();
+    };
 };
 
 #endif
