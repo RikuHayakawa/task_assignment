@@ -126,7 +126,6 @@ namespace gap
         }
         cout << "Constraint time:" << endl;
         cout << constaint_time << endl;
-
     }
 
     void CGap::PrintAssignment()
@@ -143,7 +142,7 @@ namespace gap
         {
             if (m_items[i].m_assignedbinid != -1)
             {
-                m_bins[m_items[i].m_assignedbinid - 1].addAssignment("task", m_items[i].m_id);
+                m_bins[m_items[i].m_assignedbinid - 1].addAssignment("task", m_items[i].m_id, m_items[i].m_workigtime);
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)

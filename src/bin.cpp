@@ -14,7 +14,7 @@ namespace gap
     {
     }
 
-    CBin::CBin(int id, int size, int max_size, int energy_efficiency) 
+    CBin::CBin(int id, int size, int max_size, int energy_efficiency)
         : m_id(id), m_size(size), m_max_size(max_size), m_energy_efficiency(energy_efficiency)
     {
     }
@@ -24,40 +24,52 @@ namespace gap
     }
 
     // Remove an assignment at specified position
-    void CBin::removeAssignment(int pos) {
-        if (pos < 0 || pos >= static_cast<int>(m_assignments.size())) {
+    void CBin::removeAssignment(int pos, const int m_item_time)
+    {
+        if (pos < 0 || pos >= static_cast<int>(m_assignments.size()))
+        {
             throw std::out_of_range("Invalid position for removal.");
         }
         m_assignments.erase(m_assignments.begin() + pos); // Remove the pair at the specified position
+        m_total_time -= m_item_time;
     }
 
     // Add an assignment (pair)
-    void CBin::addAssignment(const std::string& name, const int id) {
+    void CBin::addAssignment(const std::string &name, const int id, const int m_item_time)
+    {
+        m_total_time += m_item_time;
         m_assignments.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
     // Swap assignments at specified positions
-    void CBin::swapAssignments(int startIndex, int endIndex) {
-        if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignments.size()) || endIndex >= static_cast<int>(m_assignments.size())) {
+    void CBin::swapAssignments(int startIndex, int endIndex)
+    {
+        if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignments.size()) || endIndex >= static_cast<int>(m_assignments.size()))
+        {
             throw std::out_of_range("Invalid positions for swap.");
         }
 
-        if (startIndex == endIndex) {
-            return;  // No need to swap if the indices are the same
+        if (startIndex == endIndex)
+        {
+            return; // No need to swap if the indices are the same
         }
 
         // Swap elements until reaching the middle of the range
-        while (startIndex < endIndex) {
+        while (startIndex < endIndex)
+        {
             std::swap(m_assignments[endIndex - 1], m_assignments[endIndex]);
             --endIndex;
         }
     }
 
-
     // Display all assignments
-    void CBin::displayAssignments() const {
-        for (const auto& assignment : m_assignments) {
+    void CBin::displayAssignments() const
+    {
+        for (const auto &assignment : m_assignments)
+        {
             std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
         }
+        // binの実行時間を表示
+        std::cout << "Total time: " << m_total_time << std::endl;
     }
 };
