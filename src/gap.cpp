@@ -38,6 +38,11 @@ namespace gap
         m_items.push_back(item);
     }
 
+    void CGap::AddRestItem(CItem &item)
+    {
+        m_rest_items.push_back(item);
+    }
+
     void CGap::AddBin(CBin &bin)
     {
         m_bins.push_back(bin);
@@ -53,7 +58,7 @@ namespace gap
         m_chargings.push_back(charging);
     }
 
-    void CGap::Approximate()
+    void CGap::ApproximateForConstraintSize()
     {
         for (int j = 0; j < m_bins.size(); ++j)
         {
@@ -75,14 +80,58 @@ namespace gap
                 knapsack.AddItem(m_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
             }
-            knapsack.Print();
-            knapsack.Dp();
-            knapsack.PrintAssignment();
+            // knapsack.Print();
+            knapsack.DpUnderConstraintSize();
+            // knapsack.PrintAssignment();
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_items.size(); ++i)
             {
                 if (knapsack.m_items[i].m_assignedbinid != -1)
                     m_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
+            }
+            PrintAssignment();
+        }
+        SetAssignmentForRobots();
+    }
+
+    void CGap::ApproximateForConstraintTime()
+    {
+        for (int j = 0; j < m_bins.size(); ++j)
+        {
+            CKnapsack knapsack;
+            knapsack.SetBin(m_bins[j]);
+            cout << endl
+                 << "Iterative " << j + 1 << endl;
+
+            // rest items存在しない場合は終了
+            if (m_rest_items.size() == 0)
+            {
+                cout << "No rest items" << endl;
+                break;
+            }
+
+            for (int i = 0; i < m_rest_items.size(); ++i)
+            {
+                m_rest_items[i].m_weight = m_sizematrix[i][j];
+                if (m_rest_items[i].m_assignedbinid == -1)
+                {
+                    m_rest_items[i].m_profit = m_profitmatrix[i][j];
+                }
+                else
+                {
+                    m_rest_items[i].m_profit = m_profitmatrix[i][j] - m_profitmatrix[i][m_rest_items[i].m_assignedbinid - 1];
+                }
+                knapsack.AddItem(m_rest_items[i]);
+                knapsack.m_items[i].m_assignedbinid = -1;
+            }
+            // knapsack.Print();
+            knapsack.DpUnderConstraintTime(constaint_time);
+            // knapsack.PrintAssignment();
+            // Copy the knapsack results back to gap
+            for (int i = 0; i < m_rest_items.size(); ++i)
+            {
+                if (knapsack.m_items[i].m_assignedbinid != -1)
+                    m_rest_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
             }
             PrintAssignment();
         }
