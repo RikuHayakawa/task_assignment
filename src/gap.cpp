@@ -91,7 +91,7 @@ namespace gap
             }
             PrintAssignment();
         }
-        SetAssignmentForRobots();
+        SetAssignmentForRobots(m_items);
     }
 
     void CGap::ApproximateForConstraintTime()
@@ -112,7 +112,6 @@ namespace gap
 
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
-                m_rest_items[i].m_weight = m_sizematrix[i][j];
                 if (m_rest_items[i].m_assignedbinid == -1)
                 {
                     m_rest_items[i].m_profit = m_profitmatrix[i][j];
@@ -124,21 +123,31 @@ namespace gap
                 knapsack.AddItem(m_rest_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
             }
-            // knapsack.Print();
+            knapsack.Print();
             knapsack.DpUnderConstraintTime(constaint_time);
-            // knapsack.PrintAssignment();
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
                 if (knapsack.m_items[i].m_assignedbinid != -1)
                     m_rest_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
             }
-            PrintAssignment();
         }
-        SetAssignmentForRobots();
+        // m_rest_itemsの割り当てをm_itemsにコピーする
+        for (int i = 0; i < m_rest_items.size(); ++i)
+        {
+            for (int j = 0; j < m_items.size(); ++j)
+            {
+                if (m_items[j].m_id == m_rest_items[i].m_id)
+                {
+                    m_items[j].m_assignedbinid = m_rest_items[i].m_assignedbinid;
+                }
+            }
+        }
+        PrintAssignment();
+        SetAssignmentForRobots(m_rest_items);
     }
 
-    void CGap::Print()
+    void CGap::Print() // 入力データを表示する
     {
         cout << "Items(id, size, profit, time) : " << endl;
         for (int i = 0; i < m_items.size(); ++i)
@@ -177,7 +186,7 @@ namespace gap
         cout << constaint_time << endl;
     }
 
-    void CGap::PrintAssignment()
+    void CGap::PrintAssignment() // DPConstraintSizeの結果を表示する
     {
         cout << "Gap assignment (itemid, binid):" << endl;
         for (int i = 0; i < m_items.size(); ++i)
@@ -185,13 +194,13 @@ namespace gap
         cout << endl;
     }
 
-    void CGap::SetAssignmentForRobots()
+    void CGap::SetAssignmentForRobots(vector<CItem> &items)
     {
-        for (int i = 0; i < m_items.size(); ++i)
+        for (int i = 0; i < items.size(); ++i)
         {
-            if (m_items[i].m_assignedbinid != -1)
+            if (items[i].m_assignedbinid != -1)
             {
-                m_bins[m_items[i].m_assignedbinid - 1].addAssignment("task", m_items[i].m_id, m_items[i].m_workigtime);
+                m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, items[i].m_workigtime);
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)
@@ -200,4 +209,5 @@ namespace gap
             m_bins[i].displayAssignments();
         }
     }
+
 };

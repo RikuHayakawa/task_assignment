@@ -41,6 +41,12 @@ namespace gap
         m_assignments.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
+    void CBin::resetAssignment()
+    {
+        m_assignments.clear();
+        m_total_time = 0;
+    }
+
     // Swap assignments at specified positions
     void CBin::swapAssignments(int startIndex, int endIndex)
     {

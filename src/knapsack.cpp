@@ -103,7 +103,7 @@ namespace gap
     void CKnapsack::DpUnderConstraintTime(const int constraint_time)
     {
         // 制約時間が既存の作業時間を下回る場合、エラーを出力して処理を終了
-        if (constraint_time <= m_bin.m_total_time)
+        if (constraint_time < m_bin.m_total_time)
         {
             std::cerr << "Error: Constraint time (" << constraint_time
                       << ") is less than or equal to the total assigned time ("
@@ -112,9 +112,8 @@ namespace gap
             return;
         }
 
-        // todo: アルゴリズム内でm_total_timeを更新する必要性がある
         int max_time = constraint_time - m_bin.m_total_time;
-        vector<vector<int>> d(m_items.size() + 1, vector<int>(m_bin.m_size + 1, 0));
+        vector<vector<int>> d(m_items.size() + 1, vector<int>(max_time + 1, 0));
         for (int i = 1; i <= m_items.size(); ++i)
         {
             for (int j = 1; j <= max_time; ++j)
@@ -132,9 +131,9 @@ namespace gap
                     d[i][j] = d[i - 1][j];
             }
         }
-        m_maxprofit = d[m_items.size()][constraint_time - m_bin.m_total_time];
+        m_maxprofit = d[m_items.size()][max_time];
         // Trace the chose items
-        int w = constraint_time - m_bin.m_total_time;
+        int w = max_time;
         for (int i = m_items.size(); i > 0; --i)
         {
             if (d[i][w] != d[i - 1][w])

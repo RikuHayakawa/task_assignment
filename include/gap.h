@@ -48,7 +48,7 @@ namespace gap
         void ApproximateForConstraintTime();
         void Print();
         void PrintAssignment(); // The result is stored in each item object
-        void SetAssignmentForRobots();
+        void SetAssignmentForRobots(vector<CItem> &items);
     };
 };
 

@@ -23,6 +23,7 @@ namespace gap
 
         void removeAssignment(int pos, const int m_item_time);                            // Remove an assignment at specified position
         void addAssignment(const std::string &name, const int id, const int m_item_time); // Add a new assignment (pair), example: ("task", 1)
+        void resetAssignment();                                                           // Reset all assignments
         void swapAssignments(int startIndex, int endIndex);                               // Swap two assignments
         void displayAssignments() const;                                                  // Display all assignments
     };
