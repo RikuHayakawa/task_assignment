@@ -10,12 +10,12 @@ namespace gap
     public:
         int m_id;
         int m_time;
-        int assigned_robot_id;
-        int assigned_station_id;
+        int m_assignedbinid;
+        int m_assigned_station_id;
 
     public:
         CCharging();
-        CCharging(int id, int m_time, int assigned_robot_id, int assigned_station_id);
+        CCharging(int id, int m_time, int m_assignedbinid, int m_assigned_station_id);
         virtual ~CCharging();
     };
 };
