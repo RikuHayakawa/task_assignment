@@ -111,13 +111,6 @@ namespace gap
                 CStation station(i + 1, charge_efficiency);
                 gap.AddStation(station);
             }
-            for (int i = 0; i < binnum; ++i)
-            {
-                int charging_time;
-                file >> charging_time;
-                CCharging charging(i + 1, charging_time, -1, -1);
-                gap.AddCharging(charging);
-            }
             int working_items[itemnum];
             for (int i = 0; i < itemnum; ++i)
             {

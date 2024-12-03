@@ -193,12 +193,6 @@ namespace gap
         for (int i = 0; i < m_stations.size(); ++i)
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
         cout << endl;
-        cout << "Chargings (id, time) :" << endl;
-        for (int i = 0; i < m_chargings.size(); ++i)
-        {
-            cout << m_chargings[i].m_id << "," << m_chargings[i].m_time << " ";
-        }
-        cout << endl;
         cout << "Size matrix:" << endl;
         for (int i = 0; i < m_sizematrix.size(); ++i)
         {
@@ -248,11 +242,11 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
+                cout << "Robot " << chargings[i].m_assignedbinid << " executes charging:" << chargings[i].m_time << endl;
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            cout << "Robot " << m_bins[i].m_id << " executes chargings:" << endl;
             m_bins[i].displayAssignments();
         }
     }
