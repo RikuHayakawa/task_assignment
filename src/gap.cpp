@@ -157,7 +157,6 @@ namespace gap
                 }
             }
         }
-        PrintAssignment();
         SetAssignmentForItems(m_rest_items);
     }
 
@@ -220,6 +219,22 @@ namespace gap
         for (int i = 0; i < m_bins.size(); ++i)
         {
             cout << "Robot " << m_bins[i].m_id << " executes tasks:" << endl;
+            m_bins[i].displayAssignments();
+        }
+    }
+
+    void CGap::SetAssignmentForChargings(vector<CCharging> &chargings)
+    {
+        for (int i = 0; i < chargings.size(); ++i)
+        {
+            if (chargings[i].m_assignedbinid != -1)
+            {
+                m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
+            }
+        }
+        for (int i = 0; i < m_bins.size(); ++i)
+        {
+            cout << "Robot " << m_bins[i].m_id << " executes chargings:" << endl;
             m_bins[i].displayAssignments();
         }
     }

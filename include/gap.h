@@ -49,6 +49,7 @@ namespace gap
         void Print();
         void PrintAssignment(); // The result is stored in each item object
         void SetAssignmentForItems(vector<CItem> &items);
+        void SetAssignmentForChargings(vector<CCharging> &chargings);
         int GetMinChargeEfficiency();
     };
 };
