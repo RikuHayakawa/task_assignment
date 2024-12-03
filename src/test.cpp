@@ -50,7 +50,7 @@ namespace gap
                     knapsack.m_items[i].m_profit = profit;
                 }
                 knapsack.Print();
-                knapsack.Dp();
+                knapsack.DpUnderConstraintSize();
                 cout << "Max Profit:" << knapsack.m_maxprofit << endl;
                 knapsack.PrintAssignment();
                 cout << endl;
@@ -111,13 +111,6 @@ namespace gap
                 CStation station(i + 1, charge_efficiency);
                 gap.AddStation(station);
             }
-            for (int i = 0; i < binnum; ++i)
-            {
-                int charging_time;
-                file >> charging_time;
-                CCharging charging(i + 1, charging_time, -1, -1);
-                gap.AddCharging(charging);
-            }
             int working_items[itemnum];
             for (int i = 0; i < itemnum; ++i)
             {
@@ -147,7 +140,8 @@ namespace gap
             file >> gap.constaint_time;
             gap.Print();
             cout << endl;
-            gap.Approximate();
+            gap.ApproximateForConstraintSize();
+            gap.ApproximateForConstraintTime();
             ++casenum;
         }
         file.close();
