@@ -37,7 +37,7 @@ namespace gap
         void Print();
         void PrintAssignment();
         void DpUnderConstraintSize();
-        void DpUnderConstraintTime(const int constraint_time);
+        void DpUnderConstraintTime(const int constraint_time, vector<int> &itemSize);
         void Greedy(); // 2-approximate algorithm
     };
 };

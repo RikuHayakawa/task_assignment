@@ -100,7 +100,7 @@ namespace gap
     }
 
     // todo: ロボットの作業時間の制約を満たすように、DPを行う。ただし、bin.sizeの制約はない。m_sizematrixで消費した分だけchargingを追加する。
-    void CKnapsack::DpUnderConstraintTime(const int constraint_time)
+    void CKnapsack::DpUnderConstraintTime(const int constraint_time, vector<int> &itemSize)
     {
         // 制約時間が既存の作業時間を下回る場合、エラーを出力して処理を終了
         if (constraint_time < m_bin.m_total_time)
@@ -119,9 +119,9 @@ namespace gap
             for (int j = 1; j <= max_time; ++j)
             {
                 // m_timeがjを超える場合は、アイテムiを選択できない。
-                if (m_items[i - 1].m_workigtime <= j)
+                if (itemSize[i - 1] <= j)
                 {
-                    int t = d[i - 1][j - m_items[i - 1].m_workigtime] + m_items[i - 1].m_profit;
+                    int t = d[i - 1][j - itemSize[i - 1]] + m_items[i - 1].m_profit;
                     if (t > d[i - 1][j])
                         d[i][j] = t;
                     else
@@ -140,7 +140,7 @@ namespace gap
             {
                 // Item i is chose, continue tracing d[i - 1][w - w(i)]
                 m_items[i - 1].m_assignedbinid = m_bin.m_id;
-                w -= m_items[i - 1].m_workigtime;
+                w -= itemSize[i - 1];
             }
         }
     }

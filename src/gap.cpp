@@ -1,5 +1,5 @@
 /**
- * gap.cpp
+ * cpp
  * Author: Zhiyang Su
  * Created on 2014-08-10.
  */
@@ -20,6 +20,7 @@
 #include "bin.h"
 #include "knapsack.h"
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -91,11 +92,18 @@ namespace gap
             }
             PrintAssignment();
         }
-        SetAssignmentForRobots(m_items);
+        SetAssignmentForItems(m_items);
     }
 
     void CGap::ApproximateForConstraintTime()
     {
+        for (int i = 0; i < m_items.size(); ++i)
+        {
+            if (m_items[i].m_assignedbinid == -1)
+            {
+                AddRestItem(m_items[i]);
+            }
+        }
         for (int j = 0; j < m_bins.size(); ++j)
         {
             CKnapsack knapsack;
@@ -110,6 +118,8 @@ namespace gap
                 break;
             }
 
+            vector<int> itemSizeIncludeCharging(m_rest_items.size(), 0);
+
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
                 if (m_rest_items[i].m_assignedbinid == -1)
@@ -122,9 +132,13 @@ namespace gap
                 }
                 knapsack.AddItem(m_rest_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
+                // 充電時間を追加
+                int task_energy = m_rest_items[i].m_workigtime * m_bins[j].m_energy_efficiency;
+                int charging_time = std::ceil(static_cast<double>(task_energy) / GetMinChargeEfficiency());
+                itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
             }
             knapsack.Print();
-            knapsack.DpUnderConstraintTime(constaint_time);
+            knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
@@ -144,7 +158,7 @@ namespace gap
             }
         }
         PrintAssignment();
-        SetAssignmentForRobots(m_rest_items);
+        SetAssignmentForItems(m_rest_items);
     }
 
     void CGap::Print() // 入力データを表示する
@@ -194,7 +208,7 @@ namespace gap
         cout << endl;
     }
 
-    void CGap::SetAssignmentForRobots(vector<CItem> &items)
+    void CGap::SetAssignmentForItems(vector<CItem> &items)
     {
         for (int i = 0; i < items.size(); ++i)
         {
@@ -208,6 +222,19 @@ namespace gap
             cout << "Robot " << m_bins[i].m_id << " executes tasks:" << endl;
             m_bins[i].displayAssignments();
         }
+    }
+
+    int CGap::GetMinChargeEfficiency()
+    {
+        int min_charge_efficiency = m_stations[0].m_charge_efficiency;
+        for (int i = 1; i < m_stations.size(); ++i)
+        {
+            if (m_stations[i].m_charge_efficiency < min_charge_efficiency)
+            {
+                min_charge_efficiency = m_stations[i].m_charge_efficiency;
+            }
+        }
+        return min_charge_efficiency;
     }
 
 };

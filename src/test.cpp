@@ -148,20 +148,6 @@ namespace gap
             gap.Print();
             cout << endl;
             gap.ApproximateForConstraintSize();
-            // 残ったアイテムを追加
-            for (int i = 0; i < gap.m_items.size(); ++i)
-            {
-                if (gap.m_items[i].m_assignedbinid == -1)
-                {
-                    gap.AddRestItem(gap.m_items[i]);
-                }
-            }
-            // rest itemsを出力する
-            for (int i = 0; i < gap.m_rest_items.size(); ++i)
-            {
-                cout << "Rest item id " << gap.m_rest_items[i].m_id << endl;
-            }
-            // todo: ここでrest itemsを使って再度計算する.  同じアイテムが割り当てられるバグがある
             gap.ApproximateForConstraintTime();
             ++casenum;
         }
