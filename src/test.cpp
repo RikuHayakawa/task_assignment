@@ -34,14 +34,14 @@ namespace gap
             {
                 cout << "Case " << casenum << ":" << endl;
                 CKnapsack knapsack;
-                CBin bin(1, binsize);
+                CBin bin(1, binsize, 1, 1);
                 knapsack.SetBin(bin);
                 for (int i = 0; i < itemnum; ++i)
                 {
                     int weight;
                     file >> weight;
-                    CItem item(i + 1, weight, -1);
-                    knapsack.AddItem(item);
+                    // CItem item(i + 1, weight, -1);
+                    // knapsack.AddItem(item);
                 }
                 for (int i = 0; i < itemnum; ++i)
                 {
@@ -74,46 +74,82 @@ namespace gap
          * --------------------------------------
          */
         ifstream file("test/testcaseforgap.txt");
-        int casenum = 1, itemnum, binnum;
-        if (file.is_open())
+        int casenum = 1, itemnum, binnum, stationnum;
+        if (!file.is_open())
         {
-            while (file >> itemnum >> binnum)
-            {
-                cout << "Case " << casenum << ":" << endl;
-                CGap gap;
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    CItem item(i + 1, -1, -1);
-                    item.m_cost = -1;
-                    gap.AddItem(item);
-                }
-                for (int i = 0; i < binnum; ++i)
-                {
-                    int binsize;
-                    file >> binsize;
-                    CBin bin(i + 1, binsize);
-                    gap.AddBin(bin);
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    vector<int> line(binnum);
-                    for (int j = 0; j < binnum; ++j)
-                        file >> line[j];
-                    gap.m_sizematrix.push_back(line);
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    vector<int> line(binnum);
-                    for (int j = 0; j < binnum; ++j)
-                        file >> line[j];
-                    gap.m_profitmatrix.push_back(line);
-                }
-                gap.Print();
-                cout << endl;
-                gap.Approximate();
-                ++casenum;
-            }
-            file.close();
+            throw "File not found!";
         }
+
+        while (file >> itemnum >> binnum >> stationnum)
+        {
+            cout << "Case " << casenum << ":" << endl;
+            CGap gap;
+            vector<int> sizes(binnum);
+            for (int i = 0; i < binnum; ++i)
+            {
+                file >> sizes[i];
+            }
+            vector<int> max_sizes(binnum);
+            for (int i = 0; i < binnum; ++i)
+            {
+                file >> max_sizes[i];
+            }
+            vector<int> energy_efficiencies(binnum);
+            for (int i = 0; i < binnum; ++i)
+            {
+                file >> energy_efficiencies[i];
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                CBin bin(i + 1, sizes[i], max_sizes[i], energy_efficiencies[i]);
+                gap.AddBin(bin);
+            }
+            for (int i = 0; i < stationnum; ++i)
+            {
+                int charge_efficiency;
+                file >> charge_efficiency;
+                CStation station(i + 1, charge_efficiency);
+                gap.AddStation(station);
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                int charging_time;
+                file >> charging_time;
+                CCharging charging(i + 1, charging_time, -1, -1);
+                gap.AddCharging(charging);
+            }
+            int working_items[itemnum];
+            for (int i = 0; i < itemnum; ++i)
+            {
+                file >> working_items[i];
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                vector<int> line(binnum);
+                for (int j = 0; j < binnum; ++j)
+                    file >> line[j];
+                gap.m_profitmatrix.push_back(line);
+            }
+            // create size matrix by bin energy efficiency and item time
+            for (int i = 0; i < itemnum; ++i)
+            {
+                vector<int> line(binnum);
+                for (int j = 0; j < gap.m_bins.size(); ++j)
+                    line[j] = gap.m_bins[j].m_energy_efficiency * working_items[i];
+                gap.m_sizematrix.push_back(line);
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                CItem item(i + 1, -1, -1, working_items[i]);
+                item.m_cost = -1;
+                gap.AddItem(item);
+            }
+            file >> gap.constaint_time;
+            gap.Print();
+            cout << endl;
+            gap.Approximate();
+            ++casenum;
+        }
+        file.close();
     }
 };
