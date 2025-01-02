@@ -26,11 +26,11 @@ namespace gap
     // Remove an assignment at specified position
     void CBin::removeAssignment(int pos, const int m_item_time)
     {
-        if (pos < 0 || pos >= static_cast<int>(m_assignments.size()))
+        if (pos < 0 || pos >= static_cast<int>(m_assignment.size()))
         {
             throw std::out_of_range("Invalid position for removal.");
         }
-        m_assignments.erase(m_assignments.begin() + pos); // Remove the pair at the specified position
+        m_assignment.erase(m_assignment.begin() + pos); // Remove the pair at the specified position
         m_total_time -= m_item_time;
     }
 
@@ -38,19 +38,19 @@ namespace gap
     void CBin::addAssignment(const std::string &name, const int id, const int m_item_time)
     {
         m_total_time += m_item_time;
-        m_assignments.emplace_back(name, id); // Using emplace_back to add the pair directly
+        m_assignment.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
     void CBin::resetAssignment()
     {
-        m_assignments.clear();
+        m_assignment.clear();
         m_total_time = 0;
     }
 
     // Swap assignments at specified positions
     void CBin::swapAssignments(int startIndex, int endIndex)
     {
-        if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignments.size()) || endIndex >= static_cast<int>(m_assignments.size()))
+        if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignment.size()) || endIndex >= static_cast<int>(m_assignment.size()))
         {
             throw std::out_of_range("Invalid positions for swap.");
         }
@@ -63,7 +63,7 @@ namespace gap
         // Swap elements until reaching the middle of the range
         while (startIndex < endIndex)
         {
-            std::swap(m_assignments[endIndex - 1], m_assignments[endIndex]);
+            std::swap(m_assignment[endIndex - 1], m_assignment[endIndex]);
             --endIndex;
         }
     }
@@ -71,7 +71,7 @@ namespace gap
     // Display all assignments
     void CBin::displayAssignments() const
     {
-        for (const auto &assignment : m_assignments)
+        for (const auto &assignment : m_assignment)
         {
             std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
         }

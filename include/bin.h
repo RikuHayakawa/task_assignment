@@ -15,7 +15,7 @@ namespace gap
         int m_max_size;
         int m_energy_efficiency;
         int m_total_time = 0;
-        std::vector<std::pair<std::string, int>> m_assignments; // To hold pairs of (name, id)
+        std::vector<std::pair<std::string, int>> m_assignment; // To hold pairs of (name, id)
 
         CBin();
         CBin(int id, int size, int max_size, int energy_efficiency);
