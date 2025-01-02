@@ -142,6 +142,7 @@ namespace gap
             cout << endl;
             gap.ApproximateForConstraintSize();
             gap.ApproximateForConstraintTime();
+            // schedule_planner::SchedulePlanner schedulePlanner(&gap);
             ++casenum;
         }
         file.close();
