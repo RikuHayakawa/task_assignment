@@ -9,6 +9,7 @@
 #include "bin.h"
 #include "knapsack.h"
 #include "gap.h"
+#include "schedule_planner.h"
 #include <iostream>
 #include <fstream>
 
@@ -142,7 +143,7 @@ namespace gap
             cout << endl;
             gap.ApproximateForConstraintSize();
             gap.ApproximateForConstraintTime();
-            // schedule_planner::SchedulePlanner schedulePlanner(&gap);
+            schedule_planner::SchedulePlanner schedulePlanner(&gap);
             ++casenum;
         }
         file.close();
