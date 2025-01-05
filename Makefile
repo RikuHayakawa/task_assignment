@@ -13,7 +13,7 @@ SCHEDULE_OPTION_DIR = schedule_option
 SCHEDULE_PLANNER_DIR = schedule_planner
 
 # 各オブジェクトファイルのパスを指定
-DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o $(BUILD_DIR)/charging.o $(BUILD_DIR)/schedule_option.o ${SCHEDULE_PLANNER_DIR}/schedule_planner.o
+DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o $(BUILD_DIR)/charging.o $(BUILD_DIR)/schedule_option.o ${BUILD_DIR}/schedule_planner.o
 
 # 実行ファイルの名前
 TARGET = $(BIN_DIR)/gap
