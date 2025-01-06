@@ -28,6 +28,8 @@ namespace schedule_planner
          * example: {1: [[(task, 1)], [(task, 2)], [(task, 3)]], 2: [[(task, 1), (task, 2)], [(task, 1), (task, 3)], [(task, 2), (task, 3)]],...}
          */
         std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> generateTaskGroups(const std::vector<std::pair<int, int>> &tasks);
+
+        bool isOvercharging(const int reset_energy, const int charging_time, const int robot_id);
     };
 };
 #endif

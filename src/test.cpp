@@ -35,7 +35,7 @@ namespace gap
             {
                 cout << "Case " << casenum << ":" << endl;
                 CKnapsack knapsack;
-                CBin bin(1, binsize, 1, 1);
+                CBin bin(1, binsize, binsize, 1, 1);
                 knapsack.SetBin(bin);
                 for (int i = 0; i < itemnum; ++i)
                 {
@@ -102,7 +102,7 @@ namespace gap
             }
             for (int i = 0; i < binnum; ++i)
             {
-                CBin bin(i + 1, sizes[i], max_sizes[i], energy_efficiencies[i]);
+                CBin bin(i + 1, sizes[i], max_sizes[i], sizes[i], energy_efficiencies[i]);
                 gap.AddBin(bin);
             }
             for (int i = 0; i < stationnum; ++i)
