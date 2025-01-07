@@ -9,7 +9,8 @@ namespace schedule_planner
     class SchedulePlanner
     {
     public:
-        std::vector<ScheduleOption> scheduleOptions;
+        std::vector<std::vector<ScheduleOption>> scheduleOptions;
+        std::vector<int> m_selected_option;
         gap::CGap *m_gap_instance; // コンポジション
 
     public:
@@ -19,7 +20,7 @@ namespace schedule_planner
         void displayScheduleOptions() const;
 
     private:
-        void createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time);
+        std::pair<bool, std::vector<ScheduleOption>> createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time, const int index);
         /**
          * @brief タスクのグループ化
          *
@@ -30,6 +31,7 @@ namespace schedule_planner
         std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> generateTaskGroups(const std::vector<std::pair<int, int>> &tasks);
 
         bool isOvercharging(const int reset_energy, const int charging_time, const int robot_id);
+        void solve(const vector<vector<ScheduleOption>> &scheduleOptions, int stationCapacity, int timeSteps);
     };
 };
 #endif

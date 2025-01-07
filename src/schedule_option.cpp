@@ -9,7 +9,7 @@ namespace schedule_planner
     ScheduleOption::ScheduleOption()
     {
     }
-    ScheduleOption::ScheduleOption(const std::vector<std::pair<std::string, int>> &assignment, const int robot_id, const bool isDecided, std::vector<int> &binary_option) : isDecided(isDecided), robot_id(robot_id), binary_option(binary_option), m_assignment(assignment)
+    ScheduleOption::ScheduleOption(const std::vector<std::pair<std::string, int>> &assignment, const int robot_id, std::vector<int> &binary_option) : robot_id(robot_id), binary_option(binary_option), m_assignment(assignment)
     {
     }
     ScheduleOption::~ScheduleOption()
