@@ -136,6 +136,7 @@ namespace gap
                 int task_energy = m_rest_items[i].m_workigtime * m_bins[j].m_energy_efficiency;
                 int charging_time = std::ceil(static_cast<double>(task_energy) / GetMinChargeEfficiency());
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
+                m_rest_items[i].m_necessary_charging_time = charging_time;
             }
             knapsack.Print();
             knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
@@ -157,6 +158,15 @@ namespace gap
                 }
             }
         }
+        // 割り当てられたアイテムから充電時間を計算する
+        vector<int> chargingTimes(m_bins.size(), 0);
+        for (int i = 0; i < m_rest_items.size(); ++i)
+        {
+            if (m_rest_items[i].m_assignedbinid != -1)
+            {
+                chargingTimes[m_rest_items[i].m_assignedbinid - 1] += m_rest_items[i].m_necessary_charging_time;
+            }
+        }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
         for (int i = 0; i < m_bins.size(); ++i)
         {
@@ -168,9 +178,10 @@ namespace gap
                     task_total_time += m_items[j].m_workigtime;
                 }
             }
-            if (task_total_time < constaint_time)
+            if (task_total_time < constaint_time && chargingTimes[i] > 0)
             {
-                CCharging charging(i + 1, constaint_time - task_total_time, m_bins[i].m_id, -1);
+                CCharging charging(i + 1, chargingTimes[i], m_bins[i].m_id, -1);
+                m_bins[i].m_assigned_chargeing_id = i + 1;
                 AddCharging(charging);
             }
         }

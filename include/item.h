@@ -19,10 +19,11 @@ namespace gap
         double m_cost; // cost = profit / weight
 
         int m_assignedbinid;
+        int m_necessary_charging_time;
 
     public:
         CItem();
-        CItem(int id, int weight, int profit, int workigtime);
+        CItem(int id, int weight, int profit, int workigtime, int necessary_charging_time);
         virtual ~CItem();
         void UpdateCost();
     };

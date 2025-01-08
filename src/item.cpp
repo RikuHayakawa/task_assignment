@@ -13,7 +13,7 @@ namespace gap
     {
     }
 
-    CItem::CItem(int id, int weight, int profit, int workigtime) : m_id(id), m_weight(weight), m_profit(profit), m_workigtime(workigtime), m_assignedbinid(-1)
+    CItem::CItem(int id, int weight, int profit, int workigtime, int necessary_charging_time) : m_id(id), m_weight(weight), m_profit(profit), m_workigtime(workigtime), m_assignedbinid(-1), m_necessary_charging_time(necessary_charging_time)
     {
         UpdateCost();
     }
