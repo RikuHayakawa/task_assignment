@@ -134,7 +134,7 @@ namespace gap
             }
             for (int i = 0; i < itemnum; ++i)
             {
-                CItem item(i + 1, -1, -1, working_items[i]);
+                CItem item(i + 1, -1, -1, working_items[i], 0);
                 item.m_cost = -1;
                 gap.AddItem(item);
             }

@@ -21,13 +21,13 @@ namespace schedule_planner
     {
         int scheduleOptionIndex = 0;
 
-        for (int i = 0; i < m_gap_instance->m_bins.size(); i++)
+        for (const auto &robot : m_gap_instance->m_bins)
         {
             std::vector<std::pair<int, int>> tasks;
 
             int charging_id = -1;
 
-            for (const auto &task : m_gap_instance->m_bins[i].m_assignment)
+            for (const auto &task : robot.m_assignment)
             {
                 if (task.first == "charging")
                 {
@@ -40,7 +40,7 @@ namespace schedule_planner
                 continue;
             const int charging_time = gap_instance->m_chargings[charging_id - 1].m_time;
 
-            const std::pair<bool, std::vector<ScheduleOption>> result = createScheduleOptionsForRobot(tasks, m_gap_instance->m_bins[i].m_id, m_gap_instance->constaint_time, charging_time, scheduleOptionIndex);
+            const std::pair<bool, std::vector<ScheduleOption>> result = createScheduleOptionsForRobot(tasks, robot.m_id, m_gap_instance->constaint_time, charging_time, scheduleOptionIndex);
             if (result.first)
             {
                 scheduleOptions.push_back(std::vector<ScheduleOption>());
@@ -49,7 +49,10 @@ namespace schedule_planner
             }
         }
         displayScheduleOptions();
-        solve(scheduleOptions, m_gap_instance->m_stations.size(), m_gap_instance->constaint_time);
+        solve(m_gap_instance->m_stations.size(), m_gap_instance->constaint_time);
+        setSelectedOptionForRobot();
+        displayPreScheduleOptions();
+        displaySelectedOption();
     }
 
     std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> SchedulePlanner::generateTaskGroups(
@@ -110,8 +113,8 @@ namespace schedule_planner
             {
                 binary_option[i] = 1;
             }
-            scheduleOption.binary_option = binary_option;
-            scheduleOption.robot_id = robot_id;
+            scheduleOption.m_binary_option = binary_option;
+            scheduleOption.m_robot_id = robot_id;
             scheduleOption.m_assignment = group.second[0]; // 1つ目の部分集合を設定
             scheduleOptionsForRobot.push_back(scheduleOption);
         }
@@ -134,7 +137,7 @@ namespace schedule_planner
                 }
                 std::cout << std::endl;
                 std::cout << "Binary Option: ";
-                for (auto &option : scheduleOptions[i][j].binary_option)
+                for (auto &option : scheduleOptions[i][j].m_binary_option)
                 {
                     std::cout << option << " ";
                 }
@@ -168,7 +171,7 @@ namespace schedule_planner
     }
 
     // DPで問題を解く関数
-    void SchedulePlanner::solve(const vector<vector<ScheduleOption>> &scheduleOptions, int stationCapacity, int timeSteps)
+    void SchedulePlanner::solve(int stationCapacity, int timeSteps)
     {
         int toDecideNum = scheduleOptions.size();
 
@@ -194,7 +197,7 @@ namespace schedule_planner
                     vector<int> nextCharge = currentCharge;
                     for (int t = 0; t < timeSteps; ++t)
                     {
-                        nextCharge[t] += option.binary_option[t];
+                        nextCharge[t] += option.m_binary_option[t];
                     }
 
                     // 競合数を計算
@@ -226,10 +229,10 @@ namespace schedule_planner
 
         // 結果の復元
         vector<int> charge = bestCharge;
-        m_selected_option = vector<int>(toDecideNum);
+        m_selected_index_array = vector<int>(toDecideNum);
         for (int i = toDecideNum - 1; i >= 0; --i)
         {
-            m_selected_option[i] = trace[charge].first;
+            m_selected_index_array[i] = trace[charge].first;
             charge = trace[charge].second;
         }
 
@@ -237,8 +240,8 @@ namespace schedule_planner
         cout << "Minimum Overflow: " << minOverflow << endl;
         for (int i = 0; i < toDecideNum; ++i)
         {
-            cout << "Robot " << i + 1 << ": Option " << m_selected_option[i] << " - ";
-            for (auto &task : scheduleOptions[i][m_selected_option[i]].m_assignment)
+            cout << "Robot " << i + 1 << ": Option " << m_selected_index_array[i] << " - ";
+            for (auto &task : scheduleOptions[i][m_selected_index_array[i]].m_assignment)
             {
                 cout << "(" << task.first << ", " << task.second << ") ";
             }
@@ -246,4 +249,73 @@ namespace schedule_planner
         }
     }
 
+    void SchedulePlanner::setSelectedOptionForRobot()
+    {
+        // scheduleOptionのm_assignmentをm_gap_instanceのm_binsに反映
+        // ただし、scheduleOptionのm_assignmentにはchargingとそれ以降のタスクがふくまれていないため、robotのm_assignmentを参照して反映する
+        for (int i = 0; i < m_gap_instance->m_bins.size(); i++)
+        {
+            auto &robot = m_gap_instance->m_bins[i];
+            ScheduleOption selectedOption;
+
+            int scheduleOptionIndex = -1;
+            // robot.m_scheduled_assignment /
+            for (int j = 0; j < scheduleOptions.size(); j++)
+            {
+
+                if (scheduleOptions[j][0].m_robot_id == robot.m_id)
+                {
+                    scheduleOptionIndex = m_selected_index_array[j];
+                    break;
+                }
+            }
+            if (scheduleOptionIndex == -1)
+            {
+                cout << "Robot " << robot.m_id << " is not charging." << endl;
+                selectedOption.m_binary_option = std::vector<int>(m_gap_instance->constaint_time, 0);
+                selectedOption.m_robot_id = robot.m_id;
+                selectedOption.m_assignment = robot.m_assignment;
+                selectedOption.m_total_time = robot.m_total_time;
+                robot.m_scheduled_assignment = selectedOption;
+                continue;
+            }
+            // 充電タスクが存在する場合
+            selectedOption = scheduleOptions[i][scheduleOptionIndex];
+            selectedOption.m_total_time = robot.m_total_time;
+            selectedOption.m_assignment.push_back(std::make_pair("charging", m_gap_instance->m_chargings[robot.m_assigned_chargeing_id - 1].m_id));
+            for (int j = 0; j < robot.m_assignment.size(); j++)
+            {
+                if (robot.m_assignment[j].first == "task") // m_assignmentのsecondとidが一致しない場合に追加
+                {
+                    selectedOption.addAssignmentIfNotExists("task", robot.m_assignment[j].second, scheduleOptions[i][scheduleOptionIndex].m_assignment, selectedOption.m_assignment);
+                }
+            }
+
+            robot.m_scheduled_assignment = selectedOption;
+        }
+    }
+
+    void SchedulePlanner::displayPreScheduleOptions() const
+    {
+        cout << "Pre Schedule Options for Robot " << endl;
+        for (int i = 0; i < m_gap_instance->m_bins.size(); i++)
+        {
+            auto &robot = m_gap_instance->m_bins[i];
+            cout << "Robot " << robot.m_id << " executes tasks:" << endl;
+            robot.displayAssignments();
+        }
+        cout << endl;
+    }
+
+    void SchedulePlanner::displaySelectedOption() const
+    {
+        cout << "Selected Options for Robot " << endl;
+        for (int i = 0; i < m_gap_instance->m_bins.size(); i++)
+        {
+            auto &robot = m_gap_instance->m_bins[i];
+            cout << "Robot " << robot.m_id << " executes tasks:" << endl;
+            robot.m_scheduled_assignment.displayAssignments();
+        }
+        cout << endl;
+    }
 }
