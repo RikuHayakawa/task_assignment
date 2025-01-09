@@ -17,6 +17,7 @@ namespace gap
         CCharging();
         CCharging(int id, int m_time, int m_assignedbinid, int m_assigned_station_id);
         virtual ~CCharging();
+        void Print();
     };
 };
 #endif

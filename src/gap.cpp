@@ -168,6 +168,7 @@ namespace gap
             }
         }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
+        int  charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
             int task_total_time = 0;
@@ -180,9 +181,10 @@ namespace gap
             }
             if (task_total_time < constaint_time && chargingTimes[i] > 0)
             {
-                CCharging charging(i + 1, chargingTimes[i], m_bins[i].m_id, -1);
-                m_bins[i].m_assigned_chargeing_id = i + 1;
+                CCharging charging(charging_id, chargingTimes[i], m_bins[i].m_id, -1);
+                m_bins[i].m_assigned_chargeing_id = charging_id;
                 AddCharging(charging);
+                charging_id++;
             }
         }
         SetAssignmentForChargings(m_chargings);
@@ -253,7 +255,7 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
-                cout << "Robot " << chargings[i].m_assignedbinid << " executes charging:" << chargings[i].m_time << endl;
+                m_chargings[i].Print();
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)

@@ -1,5 +1,6 @@
 
 #include "charging.h"
+#include <iostream>
 
 namespace gap
 {
@@ -11,5 +12,10 @@ namespace gap
     }
     CCharging::~CCharging()
     {
+    }
+    void 
+    CCharging::Print()
+    {
+        std::cout << "Charging id: " << m_id << " time: " << m_time << " assigned bin id: " << m_assignedbinid << " assigned station id: " << m_assigned_station_id << std::endl;
     }
 };
