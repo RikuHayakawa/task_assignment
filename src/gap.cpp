@@ -168,7 +168,7 @@ namespace gap
             }
         }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
-        int  charging_id = 1;
+        int charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
             int task_total_time = 0;
@@ -182,7 +182,6 @@ namespace gap
             if (task_total_time < constaint_time && chargingTimes[i] > 0)
             {
                 CCharging charging(charging_id, chargingTimes[i], m_bins[i].m_id, -1);
-                m_bins[i].m_assigned_chargeing_id = charging_id;
                 AddCharging(charging);
                 charging_id++;
             }

@@ -253,6 +253,8 @@ namespace schedule_planner
     {
         // scheduleOptionのm_assignmentをm_gap_instanceのm_binsに反映
         // ただし、scheduleOptionのm_assignmentにはchargingとそれ以降のタスクがふくまれていないため、robotのm_assignmentを参照して反映する
+        m_occupation_all = std::vector<int>(m_gap_instance->constaint_time, 0);
+
         for (int i = 0; i < m_gap_instance->m_bins.size(); i++)
         {
             auto &robot = m_gap_instance->m_bins[i];
@@ -281,9 +283,19 @@ namespace schedule_planner
                 continue;
             }
             // 充電タスクが存在する場合
+            int chargingId = -1;
+            for (int j = 0; j < robot.m_assignment.size(); j++)
+            {
+                if (robot.m_assignment[j].first == "charging")
+                {
+                    chargingId = robot.m_assignment[j].second;
+                    break;
+                }
+            }
+
             selectedOption = m_schedule_options[optionsIndex][selectedOptionIndex];
             selectedOption.m_total_time = robot.m_total_time;
-            selectedOption.m_assignment.push_back(std::make_pair("charging", m_gap_instance->m_chargings[robot.m_assigned_chargeing_id - 1].m_id));
+            selectedOption.m_assignment.push_back(std::make_pair("charging", m_gap_instance->m_chargings[chargingId - 1].m_id));
             for (int j = 0; j < robot.m_assignment.size(); j++)
             {
                 if (robot.m_assignment[j].first == "task") // m_assignmentのidが一致しない場合に追加
@@ -291,9 +303,30 @@ namespace schedule_planner
                     selectedOption.addAssignmentIfNotExists("task", robot.m_assignment[j].second, m_schedule_options[optionsIndex][selectedOptionIndex].m_assignment, selectedOption.m_assignment);
                 }
             }
+            assignChargingToStation(selectedOption, chargingId);
 
             robot.m_scheduled_assignment = selectedOption;
         }
+    }
+
+    void SchedulePlanner::assignChargingToStation(const ScheduleOption &selected_option, const int charging_id)
+    {
+        for (int j = 0; j < m_gap_instance->constaint_time; j++)
+        {
+            m_occupation_all[j] += selected_option.m_binary_option[j];
+        }
+        // m_occupation_all[j]の最大値を算出する
+        int station_id = *std::max_element(m_occupation_all.begin(), m_occupation_all.end());
+        cout << "Station ID: " << station_id << endl;
+        cout << "Charging ID: " << charging_id << endl;
+        if (station_id > m_gap_instance->m_stations.size())
+            return;
+
+        for (int j = 0; j < m_gap_instance->constaint_time; j++)
+        {
+            m_gap_instance->m_stations[station_id - 1].m_occupation_per_time[j] += selected_option.m_binary_option[j];
+        }
+        m_gap_instance->m_chargings[charging_id - 1].m_assigned_station_id = station_id;
     }
 
     void SchedulePlanner::displayPreScheduleOptions() const

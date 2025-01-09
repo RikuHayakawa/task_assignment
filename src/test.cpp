@@ -86,6 +86,7 @@ namespace gap
             cout << "Case " << casenum << ":" << endl;
             CGap gap;
             vector<int> sizes(binnum);
+            file >> gap.constaint_time;
             for (int i = 0; i < binnum; ++i)
             {
                 file >> sizes[i];
@@ -109,7 +110,7 @@ namespace gap
             {
                 int charge_efficiency;
                 file >> charge_efficiency;
-                CStation station(i + 1, charge_efficiency);
+                CStation station(i + 1, charge_efficiency, 0, 0, vector<int>(gap.constaint_time, 0));
                 gap.AddStation(station);
             }
             int working_items[itemnum];
@@ -138,12 +139,21 @@ namespace gap
                 item.m_cost = -1;
                 gap.AddItem(item);
             }
-            file >> gap.constaint_time;
             gap.Print();
             cout << endl;
             gap.ApproximateForConstraintSize();
             gap.ApproximateForConstraintTime();
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
+            // m_chargings print
+            for (int i = 0; i < gap.m_chargings.size(); i++)
+            {
+                gap.m_chargings[i].Print();
+            }
+            // m_stations print
+            for (int i = 0; i < gap.m_stations.size(); i++)
+            {
+                gap.m_stations[i].Print();
+            }
             ++casenum;
         }
         file.close();

@@ -17,7 +17,6 @@ namespace gap
         int m_initial_size;
         int m_energy_efficiency;
         int m_total_time = 0;
-        int m_assigned_chargeing_id = -1;
         std::vector<std::pair<std::string, int>>
             m_assignment; // To hold pairs of (name, id)
         schedule_planner::ScheduleOption m_scheduled_assignment;

@@ -9,6 +9,7 @@ namespace schedule_planner
     class SchedulePlanner
     {
     public:
+        std::vector<int> m_occupation_all;
         std::vector<std::vector<ScheduleOption>> m_schedule_options;
         std::vector<int> m_selected_index_array;
         gap::CGap *m_gap_instance; // コンポジション
@@ -33,6 +34,7 @@ namespace schedule_planner
         bool isOvercharging(const int reset_energy, const int charging_time, const int robot_id);
         void solve(int stationCapacity, int timeSteps);
         void setSelectedOptionForRobot();
+        void assignChargingToStation(const ScheduleOption &selected_option, const int charging_id);
         void displayPreScheduleOptions() const;
         void displaySelectedOption() const;
     };
