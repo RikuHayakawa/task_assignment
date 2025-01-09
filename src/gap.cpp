@@ -1,5 +1,5 @@
 /**
- * gap.cpp
+ * cpp
  * Author: Zhiyang Su
  * Created on 2014-08-10.
  */
@@ -20,6 +20,7 @@
 #include "bin.h"
 #include "knapsack.h"
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -38,6 +39,11 @@ namespace gap
         m_items.push_back(item);
     }
 
+    void CGap::AddRestItem(CItem &item)
+    {
+        m_rest_items.push_back(item);
+    }
+
     void CGap::AddBin(CBin &bin)
     {
         m_bins.push_back(bin);
@@ -53,7 +59,7 @@ namespace gap
         m_chargings.push_back(charging);
     }
 
-    void CGap::Approximate()
+    void CGap::ApproximateForConstraintSize()
     {
         for (int j = 0; j < m_bins.size(); ++j)
         {
@@ -75,9 +81,9 @@ namespace gap
                 knapsack.AddItem(m_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
             }
-            knapsack.Print();
-            knapsack.Dp();
-            knapsack.PrintAssignment();
+            // knapsack.Print();
+            knapsack.DpUnderConstraintSize();
+            // knapsack.PrintAssignment();
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_items.size(); ++i)
             {
@@ -86,10 +92,93 @@ namespace gap
             }
             PrintAssignment();
         }
-        SetAssignmentForRobots();
+        SetAssignmentForItems(m_items);
     }
 
-    void CGap::Print()
+    void CGap::ApproximateForConstraintTime()
+    {
+        for (int i = 0; i < m_items.size(); ++i)
+        {
+            if (m_items[i].m_assignedbinid == -1)
+            {
+                AddRestItem(m_items[i]);
+            }
+        }
+        for (int j = 0; j < m_bins.size(); ++j)
+        {
+            CKnapsack knapsack;
+            knapsack.SetBin(m_bins[j]);
+            cout << endl
+                 << "Iterative " << j + 1 << endl;
+
+            // rest items存在しない場合は終了
+            if (m_rest_items.size() == 0)
+            {
+                cout << "No rest items" << endl;
+                break;
+            }
+
+            vector<int> itemSizeIncludeCharging(m_rest_items.size(), 0);
+
+            for (int i = 0; i < m_rest_items.size(); ++i)
+            {
+                if (m_rest_items[i].m_assignedbinid == -1)
+                {
+                    m_rest_items[i].m_profit = m_profitmatrix[i][j];
+                }
+                else
+                {
+                    m_rest_items[i].m_profit = m_profitmatrix[i][j] - m_profitmatrix[i][m_rest_items[i].m_assignedbinid - 1];
+                }
+                knapsack.AddItem(m_rest_items[i]);
+                knapsack.m_items[i].m_assignedbinid = -1;
+                // 充電時間を追加
+                int task_energy = m_rest_items[i].m_workigtime * m_bins[j].m_energy_efficiency;
+                int charging_time = std::ceil(static_cast<double>(task_energy) / GetMinChargeEfficiency());
+                itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
+            }
+            knapsack.Print();
+            knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
+            // Copy the knapsack results back to gap
+            for (int i = 0; i < m_rest_items.size(); ++i)
+            {
+                if (knapsack.m_items[i].m_assignedbinid != -1)
+                    m_rest_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
+            }
+        }
+        // m_rest_itemsの割り当てをm_itemsにコピーする
+        for (int i = 0; i < m_rest_items.size(); ++i)
+        {
+            for (int j = 0; j < m_items.size(); ++j)
+            {
+                if (m_items[j].m_id == m_rest_items[i].m_id)
+                {
+                    m_items[j].m_assignedbinid = m_rest_items[i].m_assignedbinid;
+                }
+            }
+        }
+        // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
+        for (int i = 0; i < m_bins.size(); ++i)
+        {
+            int task_total_time = 0;
+            for (int j = 0; j < m_items.size(); ++j)
+            {
+                if (m_items[j].m_assignedbinid == m_bins[i].m_id)
+                {
+                    task_total_time += m_items[j].m_workigtime;
+                }
+            }
+            if (task_total_time < constaint_time)
+            {
+                CCharging charging(i + 1, constaint_time - task_total_time, m_bins[i].m_id, -1);
+                AddCharging(charging);
+            }
+        }
+        SetAssignmentForChargings(m_chargings);
+        SetAssignmentForItems(m_rest_items);
+    }
+
+    void CGap::Print() // 入力データを表示する
     {
         cout << "Items(id, size, profit, time) : " << endl;
         for (int i = 0; i < m_items.size(); ++i)
@@ -103,12 +192,6 @@ namespace gap
         cout << "Stations (id, charge_efficiency):" << endl;
         for (int i = 0; i < m_stations.size(); ++i)
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
-        cout << endl;
-        cout << "Chargings (id, time) :" << endl;
-        for (int i = 0; i < m_chargings.size(); ++i)
-        {
-            cout << m_chargings[i].m_id << "," << m_chargings[i].m_time << " ";
-        }
         cout << endl;
         cout << "Size matrix:" << endl;
         for (int i = 0; i < m_sizematrix.size(); ++i)
@@ -126,10 +209,9 @@ namespace gap
         }
         cout << "Constraint time:" << endl;
         cout << constaint_time << endl;
-
     }
 
-    void CGap::PrintAssignment()
+    void CGap::PrintAssignment() // DPConstraintSizeの結果を表示する
     {
         cout << "Gap assignment (itemid, binid):" << endl;
         for (int i = 0; i < m_items.size(); ++i)
@@ -137,13 +219,13 @@ namespace gap
         cout << endl;
     }
 
-    void CGap::SetAssignmentForRobots()
+    void CGap::SetAssignmentForItems(vector<CItem> &items)
     {
-        for (int i = 0; i < m_items.size(); ++i)
+        for (int i = 0; i < items.size(); ++i)
         {
-            if (m_items[i].m_assignedbinid != -1)
+            if (items[i].m_assignedbinid != -1)
             {
-                m_bins[m_items[i].m_assignedbinid - 1].addAssignment("task", m_items[i].m_id);
+                m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, items[i].m_workigtime);
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)
@@ -152,4 +234,34 @@ namespace gap
             m_bins[i].displayAssignments();
         }
     }
+
+    void CGap::SetAssignmentForChargings(vector<CCharging> &chargings)
+    {
+        for (int i = 0; i < chargings.size(); ++i)
+        {
+            if (chargings[i].m_assignedbinid != -1)
+            {
+                m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
+                cout << "Robot " << chargings[i].m_assignedbinid << " executes charging:" << chargings[i].m_time << endl;
+            }
+        }
+        for (int i = 0; i < m_bins.size(); ++i)
+        {
+            m_bins[i].displayAssignments();
+        }
+    }
+
+    int CGap::GetMinChargeEfficiency()
+    {
+        int min_charge_efficiency = m_stations[0].m_charge_efficiency;
+        for (int i = 1; i < m_stations.size(); ++i)
+        {
+            if (m_stations[i].m_charge_efficiency < min_charge_efficiency)
+            {
+                min_charge_efficiency = m_stations[i].m_charge_efficiency;
+            }
+        }
+        return min_charge_efficiency;
+    }
+
 };
