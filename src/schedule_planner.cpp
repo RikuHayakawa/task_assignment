@@ -127,7 +127,7 @@ namespace schedule_planner
 
         for (int i = 0; i < scheduleOptions.size(); i++)
         {
-            std::cout << "Robot " << i + 1 << std::endl;
+            std::cout << "Robot " << scheduleOptions[i][0].m_robot_id << std::endl;
             for (int j = 0; j < scheduleOptions[i].size(); j++)
             {
                 std::cout << "Option " << j << " - ";
@@ -240,7 +240,7 @@ namespace schedule_planner
         cout << "Minimum Overflow: " << minOverflow << endl;
         for (int i = 0; i < toDecideNum; ++i)
         {
-            cout << "Robot " << i + 1 << ": Option " << m_selected_index_array[i] << " - ";
+            cout << "Robot " << scheduleOptions[i][m_selected_index_array[i]].m_robot_id << ": Option " << m_selected_index_array[i] << " - ";
             for (auto &task : scheduleOptions[i][m_selected_index_array[i]].m_assignment)
             {
                 cout << "(" << task.first << ", " << task.second << ") ";
