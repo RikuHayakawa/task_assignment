@@ -9,7 +9,7 @@ namespace schedule_planner
     class SchedulePlanner
     {
     public:
-        std::vector<std::vector<ScheduleOption>> scheduleOptions;
+        std::vector<std::vector<ScheduleOption>> m_schedule_options;
         std::vector<int> m_selected_index_array;
         gap::CGap *m_gap_instance; // コンポジション
 
