@@ -139,7 +139,7 @@ namespace gap
                 item.m_cost = -1;
                 gap.AddItem(item);
             }
-            gap.Print();
+            // gap.Print();
             cout << endl;
             gap.ApproximateForConstraintSize();
             gap.ApproximateForConstraintTime();
@@ -154,6 +154,14 @@ namespace gap
             {
                 gap.m_stations[i].Print();
             }
+            cout << "Occupation all: ";
+            for (int i = 0; i < schedulePlanner.m_occupation_all.size(); i++)
+            {
+                cout << schedulePlanner.m_occupation_all[i] << " ";
+            }
+            const int overflow = schedulePlanner.calculateOverflow(schedulePlanner.m_occupation_all, gap.m_stations.size());
+            cout << endl
+                 << "Overflow: " << overflow << endl;
             ++casenum;
         }
         file.close();

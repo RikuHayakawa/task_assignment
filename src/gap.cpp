@@ -90,7 +90,7 @@ namespace gap
                 if (knapsack.m_items[i].m_assignedbinid != -1)
                     m_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
             }
-            PrintAssignment();
+            // PrintAssignment();
         }
         SetAssignmentForItems(m_items);
     }
@@ -138,7 +138,7 @@ namespace gap
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
                 m_rest_items[i].m_necessary_charging_time = charging_time;
             }
-            knapsack.Print();
+            // knapsack.Print();
             knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
