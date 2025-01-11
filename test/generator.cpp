@@ -3,11 +3,20 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 using namespace std;
 
 void generateInput(int tasks, int robots, int stations, int constraintTime, ofstream &outFile)
 {
     srand(time(0)); // Initialize random seed
+
+    // Generate UUID
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    outFile << uuid << endl;
 
     outFile << tasks << " " << robots << " " << stations << endl;
     outFile << constraintTime << endl;

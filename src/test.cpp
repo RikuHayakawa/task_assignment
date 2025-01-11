@@ -75,14 +75,16 @@ namespace gap
          * --------------------------------------
          */
         ifstream file("test/testcaseforgap.txt");
+        string test_id;
         int casenum = 1, itemnum, binnum, stationnum;
         if (!file.is_open())
         {
             throw "File not found!";
         }
 
-        while (file >> itemnum >> binnum >> stationnum)
+        while (file >> test_id >> itemnum >> binnum >> stationnum)
         {
+            cout << "Test ID: " << test_id << endl;
             cout << "Case " << casenum << ":" << endl;
             CGap gap;
             vector<int> sizes(binnum);
