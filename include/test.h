@@ -9,7 +9,7 @@
 
 namespace gap
 {
-    void TestKnapsack();
+    // void TestKnapsack();
     void TestGap();
 };
 

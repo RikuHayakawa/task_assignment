@@ -17,49 +17,49 @@ using namespace std;
 
 namespace gap
 {
-    void TestKnapsack()
-    {
-        /* Get input data from testcaseforknapsack.txt
-         * Format:
-         * --------------------------------------
-         * item_num bin_size
-         * item_size1 item_size2 ...
-         * item_profit1 item_profit2 ...
-         * --------------------------------------
-         */
-        ifstream file("test/testcaseforknapsack.txt");
-        int casenum = 1, itemnum, binsize;
-        if (file.is_open())
-        {
-            while (file >> itemnum >> binsize)
-            {
-                cout << "Case " << casenum << ":" << endl;
-                CKnapsack knapsack;
-                CBin bin(1, binsize, binsize, 1, 1);
-                knapsack.SetBin(bin);
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    int weight;
-                    file >> weight;
-                    // CItem item(i + 1, weight, -1);
-                    // knapsack.AddItem(item);
-                }
-                for (int i = 0; i < itemnum; ++i)
-                {
-                    int profit;
-                    file >> profit;
-                    knapsack.m_items[i].m_profit = profit;
-                }
-                knapsack.Print();
-                knapsack.DpUnderConstraintSize();
-                cout << "Max Profit:" << knapsack.m_maxprofit << endl;
-                knapsack.PrintAssignment();
-                cout << endl;
-                ++casenum;
-            }
-            file.close();
-        }
-    }
+    // void TestKnapsack()
+    // {
+    //     /* Get input data from testcaseforknapsack.txt
+    //      * Format:
+    //      * --------------------------------------
+    //      * item_num bin_size
+    //      * item_size1 item_size2 ...
+    //      * item_profit1 item_profit2 ...
+    //      * --------------------------------------
+    //      */
+    //     ifstream file("test/testcaseforknapsack.txt");
+    //     int casenum = 1, itemnum, binsize;
+    //     if (file.is_open())
+    //     {
+    //         while (file >> itemnum >> binsize)
+    //         {
+    //             cout << "Case " << casenum << ":" << endl;
+    //             CKnapsack knapsack;
+    //             CBin bin(1, binsize, binsize, 1, 1);
+    //             knapsack.SetBin(bin);
+    //             for (int i = 0; i < itemnum; ++i)
+    //             {
+    //                 int weight;
+    //                 file >> weight;
+    //                 // CItem item(i + 1, weight, -1);
+    //                 // knapsack.AddItem(item);
+    //             }
+    //             for (int i = 0; i < itemnum; ++i)
+    //             {
+    //                 int profit;
+    //                 file >> profit;
+    //                 knapsack.m_items[i].m_profit = profit;
+    //             }
+    //             knapsack.Print();
+    //             knapsack.DpUnderConstraintSize();
+    //             cout << "Max Profit:" << knapsack.m_maxprofit << endl;
+    //             knapsack.PrintAssignment();
+    //             cout << endl;
+    //             ++casenum;
+    //         }
+    //         file.close();
+    //     }
+    // }
 
     void TestGap()
     {
@@ -144,7 +144,19 @@ namespace gap
             // gap.Print();
             cout << endl;
             gap.ApproximateForConstraintSize();
+            // bins dispaly assignments
+            for (int i = 0; i < gap.m_bins.size(); i++)
+            {
+                gap.m_bins[i].displayAssignments();
+            }
+
             gap.ApproximateForConstraintTime();
+            // bins dispaly assignments
+            for (int i = 0; i < gap.m_bins.size(); i++)
+            {
+                gap.m_bins[i].displayAssignments();
+            }
+
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
             // m_chargings print
             for (int i = 0; i < gap.m_chargings.size(); i++)
