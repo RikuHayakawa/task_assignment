@@ -65,8 +65,6 @@ namespace gap
         {
             CKnapsack knapsack;
             knapsack.SetBin(m_bins[j]);
-            cout << endl
-                 << "Iterative " << j + 1 << endl;
             for (int i = 0; i < m_items.size(); ++i)
             {
                 m_items[i].m_weight = m_sizematrix[i][j];
@@ -81,7 +79,6 @@ namespace gap
                 knapsack.AddItem(m_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
             }
-            // knapsack.Print();
             knapsack.DpUnderConstraintSize();
             // knapsack.PrintAssignment();
             // Copy the knapsack results back to gap
@@ -108,9 +105,6 @@ namespace gap
         {
             CKnapsack knapsack;
             knapsack.SetBin(m_bins[j]);
-            cout << endl
-                 << "Iterative " << j + 1 << endl;
-
             // rest items存在しない場合は終了
             if (m_rest_items.size() == 0)
             {
@@ -138,7 +132,6 @@ namespace gap
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
                 m_rest_items[i].m_necessary_charging_time = charging_time;
             }
-            // knapsack.Print();
             knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
@@ -242,7 +235,6 @@ namespace gap
         }
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            cout << "Robot " << m_bins[i].m_id << " executes tasks:" << endl;
             m_bins[i].displayAssignments();
         }
     }
@@ -254,7 +246,6 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
-                m_chargings[i].Print();
             }
         }
         for (int i = 0; i < m_bins.size(); ++i)

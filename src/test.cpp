@@ -151,11 +151,13 @@ namespace gap
             {
                 gap.m_chargings[i].Print();
             }
+            cout << endl;
             // m_stations print
             for (int i = 0; i < gap.m_stations.size(); i++)
             {
                 gap.m_stations[i].Print();
             }
+            cout << endl;
             cout << "Occupation all: ";
             for (int i = 0; i < schedulePlanner.m_occupation_all.size(); i++)
             {

@@ -71,6 +71,7 @@ namespace gap
     // Display all assignments
     void CBin::displayAssignments() const
     {
+        std::cout << "Bin " << m_id << " assignment:" << std::endl;
         for (const auto &assignment : m_assignment)
         {
             std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
