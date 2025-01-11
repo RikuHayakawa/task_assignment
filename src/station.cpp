@@ -4,10 +4,10 @@
 
 namespace gap
 {
-    CStation::CStation() : m_id(-1), m_charge_efficiency(-1), m_occupation_rate(-1), m_overflow(-1)
+    CStation::CStation() : m_id(-1), m_charge_efficiency(-1), m_capacity(0), m_occupation_rate(-1), m_overflow(-1)
     {
     }
-    CStation::CStation(int id, int efficiency, int rate, int overflow, std::vector<int> occupation_per_time) : m_id(id), m_charge_efficiency(efficiency), m_occupation_rate(rate), m_overflow(overflow), m_occupation_per_time(occupation_per_time)
+    CStation::CStation(int id, int efficiency, int capacity, int rate, int overflow, std::vector<int> occupation_per_time) : m_id(id), m_charge_efficiency(efficiency), m_capacity(capacity), m_occupation_rate(rate), m_overflow(overflow), m_occupation_per_time(occupation_per_time)
     {
     }
     CStation::~CStation()

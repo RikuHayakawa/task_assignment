@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void generateInput(int tasks, int robots, int stations, int constraintTime, ofstream &outFile)
+void generateInput(int tasks, int robots, int stations, int stationCapacity, int constraintTime, ofstream &outFile)
 {
     srand(time(0)); // Initialize random seed
 
@@ -45,6 +45,12 @@ void generateInput(int tasks, int robots, int stations, int constraintTime, ofst
         outFile << "1" << (i == stations - 1 ? "\n" : " "); // Fixed value as per the example
     }
 
+    // Generate station capacities
+    for (int i = 0; i < stations; i++)
+    {
+        outFile << stationCapacity << (i == stations - 1 ? "\n" : " "); // Fixed value as per the example
+    }
+
     // Generate task execution times
     for (int i = 0; i < tasks; i++)
     {
@@ -63,15 +69,15 @@ void generateInput(int tasks, int robots, int stations, int constraintTime, ofst
 
 int main()
 {
-    int tasks, robots, stations, constraintTime;
+    int tasks, robots, stations, stationCapacity, constraintTime;
 
     // Input the fixed values
     cout << "Enter the number of tasks: ";
     cin >> tasks;
     cout << "Enter the number of robots: ";
     cin >> robots;
-    cout << "Enter the number of stations: ";
-    cin >> stations;
+    cout << "Enter the station capacity: ";
+    cin >> stationCapacity;
     cout << "Enter the constraint time: ";
     cin >> constraintTime;
 
@@ -84,7 +90,7 @@ int main()
     }
 
     // Generate the input data
-    generateInput(tasks, robots, stations, constraintTime, outFile);
+    generateInput(tasks, robots, stations = 1, stationCapacity, constraintTime, outFile);
 
     cout << "Input data has been written to generatedtest.txt" << endl;
 

@@ -49,7 +49,7 @@ namespace schedule_planner
             }
         }
         displayScheduleOptions();
-        solve(m_gap_instance->m_stations.size(), m_gap_instance->constaint_time);
+        solve(m_gap_instance->m_stations[0].m_capacity, m_gap_instance->constaint_time);
         setSelectedOptionForRobot();
         // displayPreScheduleOptions();
         // displaySelectedOption();
@@ -303,44 +303,26 @@ namespace schedule_planner
                 }
             }
             assignChargingToStation(selectedOption, chargingId);
-
             robot.m_scheduled_assignment = selectedOption;
         }
     }
 
+    // 充電ステーションが一つだけであることを前提としている
     void SchedulePlanner::assignChargingToStation(const ScheduleOption &selected_option, const int charging_id)
     {
-        std::vector<int> dot_producted_array = std::vector<int>(m_gap_instance->constaint_time, 0);
+        std::vector<int> station_occupation = std::vector<int>(m_gap_instance->constaint_time, 0);
         for (int j = 0; j < m_gap_instance->constaint_time; j++)
         {
             m_occupation_all[j] += selected_option.m_binary_option[j];
-            dot_producted_array[j] = m_occupation_all[j] * selected_option.m_binary_option[j];
+            station_occupation[j] = m_gap_instance->m_stations[0].m_occupation_per_time[j] + selected_option.m_binary_option[j];
         }
         // m_occupation_all[j]の最大値を算出する
-        int station_id = *std::max_element(dot_producted_array.begin(), dot_producted_array.end());
-        if (station_id > m_gap_instance->m_stations.size())
+        int size = *std::max_element(station_occupation.begin(), station_occupation.end());
+        if (size > m_gap_instance->m_stations[0].m_capacity)
             return;
 
-        cout << "Station ID: " << station_id << endl;
-        cout << "selected_option.m_binary_option: ";
-        std::vector<int> occupation_per_time_for_robot = m_gap_instance->m_stations[station_id - 1].m_occupation_per_time;
-
-        for (int j = 0; j < m_gap_instance->constaint_time; j++)
-        {
-            cout << selected_option.m_binary_option[j] << " ";
-        }
-        cout << endl;
-        for (int j = 0; j < m_gap_instance->constaint_time; j++)
-        {
-            occupation_per_time_for_robot[j] += selected_option.m_binary_option[j];
-        }
-        bool overflowFlag = *std::max_element(occupation_per_time_for_robot.begin(), occupation_per_time_for_robot.end()) != 1;
-        if (overflowFlag)
-        {
-            return;
-        }
-        m_gap_instance->m_stations[station_id - 1].m_occupation_per_time = occupation_per_time_for_robot;
-        m_gap_instance->m_chargings[charging_id - 1].m_assigned_station_id = station_id;
+        m_gap_instance->m_stations[0].m_occupation_per_time = station_occupation;
+        m_gap_instance->m_chargings[charging_id - 1].m_assigned_station_id = m_gap_instance->m_stations[0].m_id;
     }
 
     void SchedulePlanner::displayPreScheduleOptions() const

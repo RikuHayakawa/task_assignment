@@ -110,9 +110,9 @@ namespace gap
             }
             for (int i = 0; i < stationnum; ++i)
             {
-                int charge_efficiency;
-                file >> charge_efficiency;
-                CStation station(i + 1, charge_efficiency, 0, 0, vector<int>(gap.constaint_time, 0));
+                int charge_efficiency, capacity;
+                file >> charge_efficiency >> capacity;
+                CStation station(i + 1, charge_efficiency, capacity, 0, 0, vector<int>(gap.constaint_time, 0));
                 gap.AddStation(station);
             }
             int working_items[itemnum];
@@ -163,7 +163,7 @@ namespace gap
             {
                 cout << schedulePlanner.m_occupation_all[i] << " ";
             }
-            const int overflow = schedulePlanner.calculateOverflow(schedulePlanner.m_occupation_all, gap.m_stations.size());
+            const int overflow = schedulePlanner.calculateOverflow(schedulePlanner.m_occupation_all, gap.m_stations[0].m_capacity);
             cout << endl
                  << "Overflow: " << overflow << endl;
             ++casenum;
