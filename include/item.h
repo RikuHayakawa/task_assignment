@@ -13,19 +13,20 @@ namespace gap
     {
     public:
         int m_id;
-        int m_weight;
+        int m_energy;
         int m_profit;
         int m_workigtime;
         double m_cost; // cost = profit / weight
 
         int m_assignedbinid;
-        int m_necessary_charging_time;
 
     public:
         CItem();
-        CItem(int id, int weight, int profit, int workigtime, int necessary_charging_time);
+        CItem(int id, int weight, int profit, int workigtime);
         virtual ~CItem();
         void UpdateCost();
+        void SetAssignedBinId(int binid, int workigtime, int energy);
+        void ClearAssignedBinId();
     };
 };
 

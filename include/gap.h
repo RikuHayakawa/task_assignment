@@ -24,7 +24,9 @@ namespace gap
     {
     public:
         vector<vector<int>> m_sizematrix;
+        vector<vector<int>> m_timematrix;
         vector<vector<int>> m_profitmatrix;
+        vector<vector<int>> m_necessary_charge_time_matrix;
         vector<vector<int>> m_station_occupancy_matrix;
         vector<CItem> m_items; // todo: knapsack m_itemsと紛らわしいので, m_all_itemsに変更する
         vector<CItem> m_rest_items;

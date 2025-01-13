@@ -15,7 +15,7 @@ namespace gap
     }
 
     CBin::CBin(int id, int size, int max_size, int initial_size, int energy_efficiency)
-        : m_id(id), m_size(size), m_max_size(max_size), m_initial_size(initial_size), m_energy_efficiency(energy_efficiency)
+        : m_id(id), m_size(size), m_max_size(max_size), m_initial_size(initial_size), m_energy_efficiency(energy_efficiency), m_rest_energy(initial_size)
     {
     }
 
@@ -35,16 +35,19 @@ namespace gap
     }
 
     // Add an assignment (pair)
-    void CBin::addAssignment(const std::string &name, const int id, const int m_item_time)
+    void CBin::addAssignment(const std::string &name, const int id, const int m_item_time, const int m_item_energy)
     {
+        const int item_energy = (name == "charging") ? -m_item_energy : m_item_energy;
         m_total_time += m_item_time;
+        m_rest_energy -= item_energy;
         m_assignment.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
     void CBin::resetAssignment()
     {
-        m_assignment.clear();
         m_total_time = 0;
+        m_rest_energy = m_initial_size;
+        m_assignment.clear();
     }
 
     // Swap assignments at specified positions
@@ -78,5 +81,8 @@ namespace gap
         }
         // binの実行時間を表示
         std::cout << "Total time: " << m_total_time << std::endl;
+        std::cout << "Rest energy: " << m_rest_energy << std::endl;
+        std::cout << "Size: " << m_size << std::endl
+                  << std::endl;
     }
 };

@@ -15,6 +15,7 @@ namespace gap
         int m_size;
         int m_max_size;
         int m_initial_size;
+        int m_rest_energy;
         int m_energy_efficiency;
         int m_total_time = 0;
         std::vector<std::pair<std::string, int>>
@@ -27,11 +28,11 @@ namespace gap
              int energy_efficiency);
         virtual ~CBin();
 
-        void removeAssignment(int pos, const int m_item_time);                            // Remove an assignment at specified position
-        void addAssignment(const std::string &name, const int id, const int m_item_time); // Add a new assignment (pair), example: ("task", 1)
-        void resetAssignment();                                                           // Reset all assignments
-        void swapAssignments(int startIndex, int endIndex);                               // Swap two assignments
-        void displayAssignments() const;                                                  // Display all assignments
+        void removeAssignment(int pos, const int m_item_time);                                                     // Remove an assignment at specified position
+        void addAssignment(const std::string &name, const int id, const int m_item_time, const int m_item_energy); // Add an assignment (pair)
+        void resetAssignment();                                                                                    // Reset all assignments
+        void swapAssignments(int startIndex, int endIndex);                                                        // Swap two assignments
+        void displayAssignments() const;                                                                           // Display all assignments
     };
 };
 
