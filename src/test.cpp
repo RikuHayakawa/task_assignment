@@ -171,9 +171,9 @@ namespace gap
             {
                 cout << schedulePlanner.m_occupation_all[i] << " ";
             }
-            const int overflow = schedulePlanner.calculateOverflow(schedulePlanner.m_occupation_all, gap.m_stations[0].m_capacity);
+            const double value = schedulePlanner.calculateValue(schedulePlanner.m_occupation_all, gap.m_stations[0].m_capacity);
             cout << endl
-                 << "Overflow: " << overflow << endl;
+                 << "Schedule value: " << value << endl;
             ++casenum;
         }
         file.close();

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 namespace schedule_planner
 {
@@ -171,18 +172,43 @@ namespace schedule_planner
         return false;
     }
 
-    // 充電ステーションの競合数を計算
-    int SchedulePlanner::calculateOverflow(const vector<int> &charge, int stationCapacity)
+    double roundToDecimalPlaces(double value, int decimalPlaces)
     {
+        double factor = pow(10, decimalPlaces); // 10の指定桁数乗を計算
+        return round(value * factor) / factor;  // 四捨五入して元のスケールに戻す
+    }
+
+    // 充電ステーションの競合数を計算
+    double SchedulePlanner::calculateValue(const std::vector<int> &charge, int stationCapacity)
+    {
+        // 評価値の計算
+        // 競合数 * 重み + 標準偏差 * 重み で評価値を算出
+        int value = 0;
         int overflow = 0;
+        int variance = 0;
+        double standardDeviation = 0;
+        int weightOverflow = 10;
+        int weightStandardDeviation = 1;
+        int sum = 0;
+        for (int c : charge)
+        {
+            sum += c;
+        }
+        int mean = sum / charge.size();
+
         for (int c : charge)
         {
             if (c > stationCapacity)
             {
+                // 競合数の計算
                 overflow += c - stationCapacity;
             }
+            // 分散の計算
+            variance += (c - mean) * (c - mean);
         }
-        return overflow;
+        standardDeviation = roundToDecimalPlaces(sqrt(variance / charge.size()), 2);
+
+        return overflow * weightOverflow + standardDeviation * weightStandardDeviation;
     }
 
     // DPで問題を解く関数
@@ -191,7 +217,7 @@ namespace schedule_planner
         int toDecideNum = m_schedule_options.size();
 
         // DPテーブルと遷移記録用
-        map<vector<int>, int> dpPrev, dpNext;           // 状態 -> 最小競合数
+        map<vector<int>, double> dpPrev, dpNext;        // 状態 -> 最小競合数
         map<vector<int>, pair<int, vector<int>>> trace; // 状態 -> (選択肢, 遷移元)
 
         // 初期状態
@@ -216,7 +242,7 @@ namespace schedule_planner
                     }
 
                     // 競合数を計算
-                    int overflow = calculateOverflow(nextCharge, stationCapacity);
+                    double overflow = calculateValue(nextCharge, stationCapacity);
 
                     // DPテーブルを更新
                     if (dpNext.find(nextCharge) == dpNext.end() || dpNext[nextCharge] > overflow)
@@ -228,6 +254,8 @@ namespace schedule_planner
             }
             dpPrev = dpNext;
         }
+
+        // dp
 
         // 最小競合数の探索
         int minOverflow = 100000;
