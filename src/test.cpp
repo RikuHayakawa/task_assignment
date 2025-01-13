@@ -98,14 +98,9 @@ namespace gap
             {
                 file >> max_sizes[i];
             }
-            vector<int> energy_efficiencies(binnum);
             for (int i = 0; i < binnum; ++i)
             {
-                file >> energy_efficiencies[i];
-            }
-            for (int i = 0; i < binnum; ++i)
-            {
-                CBin bin(i + 1, sizes[i], max_sizes[i], sizes[i], energy_efficiencies[i]);
+                CBin bin(i + 1, sizes[i], max_sizes[i], sizes[i], 0);
                 gap.AddBin(bin);
             }
             for (int i = 0; i < stationnum; ++i)
@@ -115,10 +110,19 @@ namespace gap
                 CStation station(i + 1, charge_efficiency, capacity, 0, 0, vector<int>(gap.constaint_time, 0));
                 gap.AddStation(station);
             }
-            int working_items[itemnum];
             for (int i = 0; i < itemnum; ++i)
             {
-                file >> working_items[i];
+                vector<int> line(binnum);
+                for (int j = 0; j < binnum; ++j)
+                    file >> line[j];
+                gap.m_timematrix.push_back(line);
+            }
+            for (int i = 0; i < itemnum; ++i)
+            {
+                vector<int> line(binnum);
+                for (int j = 0; j < binnum; ++j)
+                    file >> line[j];
+                gap.m_sizematrix.push_back(line);
             }
             for (int i = 0; i < itemnum; ++i)
             {
@@ -127,17 +131,9 @@ namespace gap
                     file >> line[j];
                 gap.m_profitmatrix.push_back(line);
             }
-            // create size matrix by bin energy efficiency and item time
             for (int i = 0; i < itemnum; ++i)
             {
-                vector<int> line(binnum);
-                for (int j = 0; j < gap.m_bins.size(); ++j)
-                    line[j] = gap.m_bins[j].m_energy_efficiency * working_items[i];
-                gap.m_sizematrix.push_back(line);
-            }
-            for (int i = 0; i < itemnum; ++i)
-            {
-                CItem item(i + 1, -1, -1, working_items[i], 0);
+                CItem item(i + 1, -1, -1, 0);
                 item.m_cost = -1;
                 gap.AddItem(item);
             }

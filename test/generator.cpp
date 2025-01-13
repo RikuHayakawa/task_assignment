@@ -33,12 +33,6 @@ void generateInput(int tasks, int robots, int stations, int stationCapacity, int
         outFile << (10) << (i == robots - 1 ? "\n" : " "); // Fixed value as per the example
     }
 
-    // Generate energy consumption efficiencies
-    for (int i = 0; i < robots; i++)
-    {
-        outFile << (rand() % 2 + 1) << (i == robots - 1 ? "\n" : " "); // Random value between 1 and 2
-    }
-
     // Generate charging efficiencies for stations
     for (int i = 0; i < stations; i++)
     {
@@ -51,10 +45,29 @@ void generateInput(int tasks, int robots, int stations, int stationCapacity, int
         outFile << stationCapacity << (i == stations - 1 ? "\n" : " "); // Fixed value as per the example
     }
 
-    // Generate task execution times
+    // Generate task execution times matrix
+    vector<vector<int>> taskTimes(tasks, vector<int>(robots, 0));
     for (int i = 0; i < tasks; i++)
     {
-        outFile << (rand() % 3 + 1) << (i == tasks - 1 ? "\n" : " "); // Random value between 1 and 3
+        for (int j = 0; j < robots; j++)
+        {
+            taskTimes[i][j] = rand() % 3 + 1; // Random value between 1 and 3
+            outFile << taskTimes[i][j] << (j == robots - 1 ? "\n" : " ");
+        }
+    }
+
+    // Generate task energy consumption matrix (efficiency * time)
+    std::vector<int> efficiencies(robots, 0);
+    for (int i = 0; i < robots; i++)
+    {
+        efficiencies[i] = rand() % 2 + 1; // Random value between 1 and 2
+    }
+    for (int i = 0; i < tasks; i++)
+    {
+        for (int j = 0; j < robots; j++)
+        {
+            outFile << efficiencies[j] * taskTimes[i][j] << (j == robots - 1 ? "\n" : " "); // Random value between 1 and 6
+        }
     }
 
     // Generate profit matrix
