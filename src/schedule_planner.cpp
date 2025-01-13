@@ -258,7 +258,7 @@ namespace schedule_planner
         // dp
 
         // 最小競合数の探索
-        int minOverflow = 100000;
+        double minOverflow = 100000;
         vector<int> bestCharge;
         for (auto &[charge, overflow] : dpPrev)
         {
