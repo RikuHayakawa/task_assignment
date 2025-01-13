@@ -40,7 +40,7 @@ namespace schedule_planner
                 continue;
             const int charging_time = gap_instance->m_chargings[charging_id - 1].m_time;
 
-            const std::pair<bool, std::vector<ScheduleOption>> result = createScheduleOptionsForRobot(tasks, robot.m_id, m_gap_instance->constaint_time, charging_time, selectedOptionIndex);
+            const std::pair<bool, std::vector<ScheduleOption>> result = createScheduleOptionsForRobot(tasks, robot.m_id, m_gap_instance->constaint_time, charging_time);
             if (result.first)
             {
                 m_schedule_options.push_back(std::vector<ScheduleOption>());
@@ -55,6 +55,13 @@ namespace schedule_planner
         // displaySelectedOption();
     }
 
+    /**
+     * generateTaskGroups
+     * @brief タスクのグループ化
+     * @param tasks タスクのリスト
+     * @return std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> グループ化されたタスクのリスト
+     * example: {1: [[(task, 1)], [(task, 2)], [(task, 3)]], 2: [[(task, 1), (task, 2)], [(task, 1), (task, 3)], [(task, 2), (task, 3)]],...}
+     */
     std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> SchedulePlanner::generateTaskGroups(
         const std::vector<std::pair<int, int>> &tasks)
     {
@@ -82,28 +89,35 @@ namespace schedule_planner
         return groupedSubsets;
     }
 
-    std::pair<bool, std::vector<ScheduleOption>> SchedulePlanner::createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time, const int index)
+    std::pair<bool, std::vector<ScheduleOption>> SchedulePlanner::createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time)
     {
         // タスクIDに基づいてスケジュールの選択肢を生成
         std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> taskGroups = generateTaskGroups(tasks);
         std::vector<ScheduleOption> scheduleOptionsForRobot;
-
-        bool replayCheck = true;
+        int selectedGroupTasksIndex = -1;
 
         for (const auto &group : taskGroups)
         {
             ScheduleOption scheduleOption;
             const int initialEnergy = m_gap_instance->m_bins[robot_id - 1].m_initial_size;
-            if (replayCheck)
+            for (int i = 0; i < group.second.size(); i++)
             {
-                const bool overCharging = isOvercharging(initialEnergy - (group.first * m_gap_instance->m_bins[robot_id - 1].m_energy_efficiency), charging_time, robot_id);
+                // 消費エネルギーを計算
+                int totalEnergy = 0;
+                for (const auto &task : group.second[i])
+                {
+                    totalEnergy += m_gap_instance->m_sizematrix[task.second - 1][robot_id - 1];
+                }
+                const bool overCharging = isOvercharging(initialEnergy - totalEnergy, charging_time, robot_id);
                 if (overCharging)
                 {
+                    cout << "Robot " << robot_id << "group " << i << " is overcharging" << endl;
                     continue;
                 }
                 else
                 {
-                    replayCheck = false;
+                    selectedGroupTasksIndex = i;
+                    break;
                 }
             }
 
@@ -115,11 +129,12 @@ namespace schedule_planner
             }
             scheduleOption.m_binary_option = binary_option;
             scheduleOption.m_robot_id = robot_id;
-            scheduleOption.m_assignment = group.second[0]; // 1つ目の部分集合を設定
+            scheduleOption.m_assignment = group.second[(selectedGroupTasksIndex != -1) ? selectedGroupTasksIndex : 0];
             scheduleOptionsForRobot.push_back(scheduleOption);
         }
 
-        return {!replayCheck, scheduleOptionsForRobot};
+        return {
+            selectedGroupTasksIndex != -1, scheduleOptionsForRobot};
     }
 
     void SchedulePlanner::displayScheduleOptions() const
@@ -148,10 +163,10 @@ namespace schedule_planner
     }
 
     // robotの最大容量を超過する場はtrueを返す
-    bool SchedulePlanner::isOvercharging(const int reset_energy, const int charging_time, const int robot_id)
+    bool SchedulePlanner::isOvercharging(const int rest_energy, const int charging_time, const int robot_id)
     {
         const int charge_energy = m_gap_instance->GetMinChargeEfficiency() * charging_time;
-        if (reset_energy + charge_energy > m_gap_instance->m_bins[robot_id - 1].m_max_size)
+        if (rest_energy + charge_energy > m_gap_instance->m_bins[robot_id - 1].m_max_size)
             return true;
         return false;
     }

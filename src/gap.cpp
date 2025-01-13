@@ -169,15 +169,7 @@ namespace gap
         int charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            int task_total_time = 0;
-            for (int j = 0; j < m_items.size(); ++j)
-            {
-                if (m_items[j].m_assignedbinid == m_bins[i].m_id)
-                {
-                    task_total_time += m_items[j].m_workigtime;
-                }
-            }
-            if (task_total_time <= constaint_time && chargingTimes[i] > 0)
+            if (chargingTimes[i] > 0)
             {
                 CCharging charging(charging_id, chargingTimes[i], chargingTimes[i] * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
                 AddCharging(charging);
@@ -195,9 +187,9 @@ namespace gap
             cout
                 << m_items[i].m_id << "," << m_items[i].m_energy << "," << m_items[i].m_profit << "," << m_items[i].m_workigtime << " ";
         cout << endl;
-        cout << "Bins (id, size, max_size, energy_efficiency):" << endl;
+        cout << "Bins (id, size, max_size):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)
-            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << "," << m_bins[i].m_energy_efficiency << " ";
+            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << " ";
         cout << endl;
         cout << "Stations (id, charge_efficiency):" << endl;
         for (int i = 0; i < m_stations.size(); ++i)
@@ -238,13 +230,10 @@ namespace gap
 
     void CGap::SetAssignmentForItems(vector<CItem> &items)
     {
-        cout << "Items assignment:" << endl;
         for (int i = 0; i < items.size(); ++i)
         {
             if (items[i].m_assignedbinid != -1)
             {
-                cout << "Item " << items[i].m_id << " is assigned to bin " << items[i].m_assignedbinid << endl;
-                cout << "Time: " << m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1] << " Energy: " << m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1] << endl;
                 m_items[items[i].m_id - 1].SetAssignedBinId(items[i].m_assignedbinid, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1], m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
                 m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
                                                                    m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);

@@ -22,7 +22,7 @@ namespace schedule_planner
         int calculateOverflow(const std::vector<int> &charge, int stationCapacity);
 
     private:
-        std::pair<bool, std::vector<ScheduleOption>> createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time, const int index);
+        std::pair<bool, std::vector<ScheduleOption>> createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time);
         /**
          * @brief タスクのグループ化
          *

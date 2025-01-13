@@ -16,7 +16,6 @@ namespace gap
         int m_max_size;
         int m_initial_size;
         int m_rest_energy;
-        int m_energy_efficiency;
         int m_total_time = 0;
         std::vector<std::pair<std::string, int>>
             m_assignment; // To hold pairs of (name, id)
@@ -24,8 +23,7 @@ namespace gap
 
         CBin();
         CBin(int id, int size, int max_size,
-             int initial_size,
-             int energy_efficiency);
+             int initial_size);
         virtual ~CBin();
 
         void removeAssignment(int pos, const int m_item_time);                                                     // Remove an assignment at specified position

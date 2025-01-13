@@ -10,12 +10,12 @@
 
 namespace gap
 {
-    CBin::CBin() : m_id(-1), m_size(-1), m_max_size(-1), m_energy_efficiency(-1)
+    CBin::CBin() : m_id(-1), m_size(-1), m_max_size(-1)
     {
     }
 
-    CBin::CBin(int id, int size, int max_size, int initial_size, int energy_efficiency)
-        : m_id(id), m_size(size), m_max_size(max_size), m_initial_size(initial_size), m_energy_efficiency(energy_efficiency), m_rest_energy(initial_size)
+    CBin::CBin(int id, int size, int max_size, int initial_size)
+        : m_id(id), m_size(size), m_max_size(max_size), m_initial_size(initial_size), m_rest_energy(initial_size)
     {
     }
 
