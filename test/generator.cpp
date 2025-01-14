@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void generateInput(int tasks, int robots, int stations, int stationCapacity, int constraintTime, ofstream &outFile)
+void generateInput(int tasks, int robots, int stations, int stationCapacity, int constraintTime, int guaranteedEnergy, ofstream &outFile)
 {
     srand(time(0)); // Initialize random seed
 
@@ -20,6 +20,7 @@ void generateInput(int tasks, int robots, int stations, int stationCapacity, int
 
     outFile << tasks << " " << robots << " " << stations << endl;
     outFile << constraintTime << endl;
+    outFile << guaranteedEnergy << endl;
 
     // Generate initial battery levels
     for (int i = 0; i < robots; i++)
@@ -82,7 +83,7 @@ void generateInput(int tasks, int robots, int stations, int stationCapacity, int
 
 int main()
 {
-    int tasks, robots, stations, stationCapacity, constraintTime;
+    int tasks, robots, stations, stationCapacity, constraintTime, guaranteedEnergy;
 
     // Input the fixed values
     cout << "Enter the number of tasks: ";
@@ -93,6 +94,8 @@ int main()
     cin >> stationCapacity;
     cout << "Enter the constraint time: ";
     cin >> constraintTime;
+    cout << "Enter the guaranteed energy: ";
+    cin >> guaranteedEnergy;
 
     // Open output file
     ofstream outFile("generatedtest.txt");
@@ -103,7 +106,7 @@ int main()
     }
 
     // Generate the input data
-    generateInput(tasks, robots, stations = 1, stationCapacity, constraintTime, outFile);
+    generateInput(tasks, robots, stations = 1, stationCapacity, constraintTime, guaranteedEnergy, outFile);
 
     cout << "Input data has been written to generatedtest.txt" << endl;
 

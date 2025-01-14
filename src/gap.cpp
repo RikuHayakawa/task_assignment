@@ -195,6 +195,10 @@ namespace gap
         for (int i = 0; i < m_stations.size(); ++i)
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
         cout << endl;
+        cout << "Charge time for guaranteed energy:" << endl;
+        for (auto it = m_charge_time_for_guaranteed_energy.begin(); it != m_charge_time_for_guaranteed_energy.end(); ++it)
+            cout << it->first << "," << it->second << endl;
+        cout << endl;
         cout << "Time matrix:" << endl;
         for (int i = 0; i < m_timematrix.size(); ++i)
         {

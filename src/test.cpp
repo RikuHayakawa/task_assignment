@@ -89,9 +89,17 @@ namespace gap
             CGap gap;
             vector<int> sizes(binnum);
             file >> gap.constaint_time;
+            file >> gap.m_guaranteed_energy;
             for (int i = 0; i < binnum; ++i)
             {
-                file >> sizes[i];
+                int size;
+                file >> size;
+                sizes[i] = (size - gap.m_guaranteed_energy) > 0 ? size - gap.m_guaranteed_energy : 0;
+                // 充電が必要な場合
+                if ((size - gap.m_guaranteed_energy) < 0)
+                {
+                    gap.m_charge_time_for_guaranteed_energy[i + 1] = -(size - gap.m_guaranteed_energy);
+                }
             }
             vector<int> max_sizes(binnum);
             for (int i = 0; i < binnum; ++i)
