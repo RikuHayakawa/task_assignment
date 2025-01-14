@@ -1,42 +1,75 @@
-Generalized Assignment Problem Solver
-Implementation of approximation algorithms for Generalized Assignment Problem (GAP).
+メイン関数の実行 (root)
+ビルド： make 
+実行：　make test
+削除：　make clean
 
-Referenece: Cohen, Reuven, Liran Katzir, and Danny Raz. "An efficient approximation for the generalized assignment problem." Information Processing Letters 100.4 (2006): 162-166.
+テスト生成関数の実行(root/test)
+ビルド：　make
+実行：　run
+削除：　clean
+＊テスト生成関数の実行には C++ boost のインストールが必要
 
-Notes:
-1. For simplicity, variables in the classes are not well encapsulated.
-
-ビルド　make 
-クリア　make clean
 
 GAP入力例
-1. 4 3 2
+
+0. test_id：　テストの識別子
+
+1. 10 3 1
 タスク数　ロボット数　ステーション数
 
-2. 2 3 4
-ロボットの初期充電残量
-
-3. 4 4 6
-ロボットの最大充電容量
-
-4. 2 2 2
-ロボットのエネルギー消費効率(roombaの場合は一度の充電で90分程度)
-
-5. 1 1
-ステーションの充電効率(roombaの場合はフル充電には3時間程度必要)
-
-6.  3 3 3 3
-タスクの実行時間
-
-7.  3 1 5
-    1 1 1
-    5 15 25
-    25 15 5
-各ロボットがタスクを実行する際の利益（タスクの優先度）
-
-8. 10
+2. 10
 制約時間、この時間内にタスクの割り当てを行う
 Constraint Time
+
+3. 3 8 4
+ロボットの初期充電残量
+
+4. 10 10 10
+ロボットの最大充電容量
+
+5. 3
+ステーションの充電効率
+
+6. 4
+ステーションのキャパシティ
+
+7. 1 2 2
+   1 1 1
+   2 2 1
+   1 2 3
+   2 3 1
+   2 2 3
+   2 1 1
+   2 1 3
+   1 3 2
+   3 3 1
+各ロボットがタスクを実行する際の時間
+
+8. 1 2 4
+   1 1 2
+   2 2 2
+   1 2 6
+   2 3 2
+   2 2 6
+   2 1 2
+   2 1 6
+   1 3 4
+   3 3 2
+各ロボットがタスクを実行する時に消費するエネルギー
+
+9. 3 1 5
+   1 1 1
+   5 15 5
+   5 15 5
+   2 1 2
+   3 3 1
+   15 10 5
+   15 10 5
+   3 1 2
+   3 3 1
+各ロボットがタスクを実行する際の利益（タスクの優先度）
+
+
 
 
 前提

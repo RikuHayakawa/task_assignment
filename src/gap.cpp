@@ -65,11 +65,10 @@ namespace gap
         {
             CKnapsack knapsack;
             knapsack.SetBin(m_bins[j]);
-            cout << endl
-                 << "Iterative " << j + 1 << endl;
             for (int i = 0; i < m_items.size(); ++i)
             {
-                m_items[i].m_weight = m_sizematrix[i][j];
+                m_items[i].m_energy = m_sizematrix[i][j];
+                m_items[i].m_workigtime = m_timematrix[i][j];
                 if (m_items[i].m_assignedbinid == -1)
                 {
                     m_items[i].m_profit = m_profitmatrix[i][j];
@@ -81,16 +80,14 @@ namespace gap
                 knapsack.AddItem(m_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
             }
-            // knapsack.Print();
-            knapsack.DpUnderConstraintSize();
-            // knapsack.PrintAssignment();
+            knapsack.DpUnderConstraintSize(constaint_time);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_items.size(); ++i)
             {
                 if (knapsack.m_items[i].m_assignedbinid != -1)
                     m_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
             }
-            PrintAssignment();
+            // PrintAssignment();
         }
         SetAssignmentForItems(m_items);
     }
@@ -104,13 +101,12 @@ namespace gap
                 AddRestItem(m_items[i]);
             }
         }
+        m_necessary_charge_time_matrix = vector<vector<int>>(m_items.size(), vector<int>(m_bins.size(), 0));
+
         for (int j = 0; j < m_bins.size(); ++j)
         {
             CKnapsack knapsack;
             knapsack.SetBin(m_bins[j]);
-            cout << endl
-                 << "Iterative " << j + 1 << endl;
-
             // rest items存在しない場合は終了
             if (m_rest_items.size() == 0)
             {
@@ -122,6 +118,8 @@ namespace gap
 
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
+                m_rest_items[i].m_energy = m_sizematrix[m_rest_items[i].m_id - 1][j];
+                m_rest_items[i].m_workigtime = m_timematrix[m_rest_items[i].m_id - 1][j];
                 if (m_rest_items[i].m_assignedbinid == -1)
                 {
                     m_rest_items[i].m_profit = m_profitmatrix[i][j];
@@ -133,17 +131,18 @@ namespace gap
                 knapsack.AddItem(m_rest_items[i]);
                 knapsack.m_items[i].m_assignedbinid = -1;
                 // 充電時間を追加
-                int task_energy = m_rest_items[i].m_workigtime * m_bins[j].m_energy_efficiency;
-                int charging_time = std::ceil(static_cast<double>(task_energy) / GetMinChargeEfficiency());
+                int charging_time = std::ceil(static_cast<double>(m_rest_items[i].m_energy) / GetMinChargeEfficiency());
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
+                m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][j] = charging_time;
             }
-            knapsack.Print();
             knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
                 if (knapsack.m_items[i].m_assignedbinid != -1)
+                {
                     m_rest_items[i].m_assignedbinid = knapsack.m_items[i].m_assignedbinid;
+                }
             }
         }
         // m_rest_itemsの割り当てをm_itemsにコピーする
@@ -157,21 +156,24 @@ namespace gap
                 }
             }
         }
+        // 割り当てられたアイテムから充電時間を計算する
+        vector<int> chargingTimes(m_bins.size(), 0);
+        for (int i = 0; i < m_rest_items.size(); ++i)
+        {
+            if (m_rest_items[i].m_assignedbinid != -1)
+            {
+                chargingTimes[m_rest_items[i].m_assignedbinid - 1] += m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][m_rest_items[i].m_assignedbinid - 1];
+            }
+        }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
+        int charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            int task_total_time = 0;
-            for (int j = 0; j < m_items.size(); ++j)
+            if (chargingTimes[i] > 0)
             {
-                if (m_items[j].m_assignedbinid == m_bins[i].m_id)
-                {
-                    task_total_time += m_items[j].m_workigtime;
-                }
-            }
-            if (task_total_time < constaint_time)
-            {
-                CCharging charging(i + 1, constaint_time - task_total_time, m_bins[i].m_id, -1);
+                CCharging charging(charging_id, chargingTimes[i], chargingTimes[i] * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
                 AddCharging(charging);
+                charging_id++;
             }
         }
         SetAssignmentForChargings(m_chargings);
@@ -183,16 +185,27 @@ namespace gap
         cout << "Items(id, size, profit, time) : " << endl;
         for (int i = 0; i < m_items.size(); ++i)
             cout
-                << m_items[i].m_id << "," << m_items[i].m_weight << "," << m_items[i].m_profit << "," << m_items[i].m_workigtime << " ";
+                << m_items[i].m_id << "," << m_items[i].m_energy << "," << m_items[i].m_profit << "," << m_items[i].m_workigtime << " ";
         cout << endl;
-        cout << "Bins (id, size, max_size, energy_efficiency):" << endl;
+        cout << "Bins (id, size, max_size):" << endl;
         for (int i = 0; i < m_bins.size(); ++i)
-            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << "," << m_bins[i].m_energy_efficiency << " ";
+            cout << m_bins[i].m_id << "," << m_bins[i].m_size << "," << m_bins[i].m_max_size << " ";
         cout << endl;
         cout << "Stations (id, charge_efficiency):" << endl;
         for (int i = 0; i < m_stations.size(); ++i)
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
         cout << endl;
+        cout << "Charge time for guaranteed energy:" << endl;
+        for (auto it = m_charge_time_for_guaranteed_energy.begin(); it != m_charge_time_for_guaranteed_energy.end(); ++it)
+            cout << it->first << "," << it->second << endl;
+        cout << endl;
+        cout << "Time matrix:" << endl;
+        for (int i = 0; i < m_timematrix.size(); ++i)
+        {
+            for (int j = 0; j < m_timematrix[0].size(); ++j)
+                cout << m_timematrix[i][j] << " ";
+            cout << endl;
+        }
         cout << "Size matrix:" << endl;
         for (int i = 0; i < m_sizematrix.size(); ++i)
         {
@@ -225,13 +238,10 @@ namespace gap
         {
             if (items[i].m_assignedbinid != -1)
             {
-                m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, items[i].m_workigtime);
+                m_items[items[i].m_id - 1].SetAssignedBinId(items[i].m_assignedbinid, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1], m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
+                m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
+                                                                   m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
             }
-        }
-        for (int i = 0; i < m_bins.size(); ++i)
-        {
-            cout << "Robot " << m_bins[i].m_id << " executes tasks:" << endl;
-            m_bins[i].displayAssignments();
         }
     }
 
@@ -241,13 +251,9 @@ namespace gap
         {
             if (chargings[i].m_assignedbinid != -1)
             {
-                m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time);
-                cout << "Robot " << chargings[i].m_assignedbinid << " executes charging:" << chargings[i].m_time << endl;
+                chargings[i].SetAssignedBinId(chargings[i].m_assignedbinid, chargings[i].m_time, chargings[i].m_charge_energy);
+                m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
             }
-        }
-        for (int i = 0; i < m_bins.size(); ++i)
-        {
-            m_bins[i].displayAssignments();
         }
     }
 

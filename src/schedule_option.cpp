@@ -1,30 +1,23 @@
-/**
- * bin.cpp
- * Author: Zhiyang Su
- * Created on 2014-08-10.
- */
-
-#include "bin.h"
+#include "schedule_option.h"
 #include <iostream>
 #include <stdexcept> // std::out_of_range
+#include <map>
+#include <vector>
+#include <algorithm>
 
-namespace gap
+namespace schedule_planner
 {
-    CBin::CBin() : m_id(-1), m_size(-1), m_max_size(-1)
+    ScheduleOption::ScheduleOption() : m_robot_id(-1), m_total_time(0), m_binary_option(std::vector<int>()), m_assignment(std::vector<std::pair<std::string, int>>())
     {
     }
-
-    CBin::CBin(int id, int size, int max_size, int initial_size)
-        : m_id(id), m_size(size), m_max_size(max_size), m_initial_size(initial_size), m_rest_energy(initial_size)
+    ScheduleOption::ScheduleOption(const std::vector<std::pair<std::string, int>> &assignment, const int robot_id, std::vector<int> &binary_option) : m_binary_option(binary_option), m_robot_id(robot_id), m_assignment(assignment)
     {
     }
-
-    CBin::~CBin()
+    ScheduleOption::~ScheduleOption()
     {
     }
-
     // Remove an assignment at specified position
-    void CBin::removeAssignment(int pos, const int m_item_time)
+    void ScheduleOption::removeAssignment(int pos, const int m_item_time)
     {
         if (pos < 0 || pos >= static_cast<int>(m_assignment.size()))
         {
@@ -35,23 +28,20 @@ namespace gap
     }
 
     // Add an assignment (pair)
-    void CBin::addAssignment(const std::string &name, const int id, const int m_item_time, const int m_item_energy)
+    void ScheduleOption::addAssignment(const std::string &name, const int id, const int m_item_time)
     {
-        const int item_energy = (name == "charging") ? -m_item_energy : m_item_energy;
         m_total_time += m_item_time;
-        m_rest_energy -= item_energy;
         m_assignment.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
-    void CBin::resetAssignment()
+    void ScheduleOption::resetAssignment()
     {
-        m_total_time = 0;
-        m_rest_energy = m_initial_size;
         m_assignment.clear();
+        m_total_time = 0;
     }
 
     // Swap assignments at specified positions
-    void CBin::swapAssignments(int startIndex, int endIndex)
+    void ScheduleOption::swapAssignments(int startIndex, int endIndex)
     {
         if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignment.size()) || endIndex >= static_cast<int>(m_assignment.size()))
         {
@@ -72,17 +62,26 @@ namespace gap
     }
 
     // Display all assignments
-    void CBin::displayAssignments() const
+    void ScheduleOption::displayAssignments() const
     {
-        std::cout << "Bin " << m_id << " assignment:" << std::endl;
         for (const auto &assignment : m_assignment)
         {
             std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
         }
         // binの実行時間を表示
         std::cout << "Total time: " << m_total_time << std::endl;
-        std::cout << "Rest energy: " << m_rest_energy << std::endl;
-        std::cout << "Size: " << m_size << std::endl
-                  << std::endl;
+    }
+
+    void ScheduleOption::addAssignmentIfNotExists(const std::string &name, int id, std::vector<std::pair<std::string, int>> &before_assignment, std::vector<std::pair<std::string, int>> &assignment)
+    {
+        // m_assignment内の各要素をチェック
+        auto it = std::find_if(before_assignment.begin(), before_assignment.end(), [id](const std::pair<std::string, int> &before_assignment)
+                               { return before_assignment.second == id; });
+
+        // 一致する要素がない場合に新しい要素を追加
+        if (it == before_assignment.end())
+        {
+            assignment.push_back(std::make_pair(name, id));
+        }
     }
 };

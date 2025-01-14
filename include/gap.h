@@ -24,7 +24,9 @@ namespace gap
     {
     public:
         vector<vector<int>> m_sizematrix;
+        vector<vector<int>> m_timematrix;
         vector<vector<int>> m_profitmatrix;
+        vector<vector<int>> m_necessary_charge_time_matrix;
         vector<vector<int>> m_station_occupancy_matrix;
         vector<CItem> m_items; // todo: knapsack m_itemsと紛らわしいので, m_all_itemsに変更する
         vector<CItem> m_rest_items;
@@ -33,6 +35,9 @@ namespace gap
         vector<CCharging> m_chargings;
         int m_maxprofit;
         int constaint_time;
+        int m_guaranteed_energy;
+        // id: bin id, value: charge time
+        map<int, int> m_charge_time_for_guaranteed_energy;
 
     public:
         CGap();

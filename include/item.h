@@ -13,7 +13,7 @@ namespace gap
     {
     public:
         int m_id;
-        int m_weight;
+        int m_energy;
         int m_profit;
         int m_workigtime;
         double m_cost; // cost = profit / weight
@@ -25,6 +25,8 @@ namespace gap
         CItem(int id, int weight, int profit, int workigtime);
         virtual ~CItem();
         void UpdateCost();
+        void SetAssignedBinId(int binid, int workigtime, int energy);
+        void ClearAssignedBinId();
     };
 };
 

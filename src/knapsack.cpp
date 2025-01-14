@@ -36,10 +36,10 @@ namespace gap
     void CKnapsack::Print()
     {
         cout << "Bin:" << m_bin.m_size << endl;
-        cout << "Items(id, weight, profit, time):" << endl;
+        cout << "Items" << endl;
         for (int i = 0; i < m_items.size(); ++i)
         {
-            cout << m_items[i].m_id << " " << m_items[i].m_weight << " " << m_items[i].m_profit << " " << m_items[i].m_workigtime << endl;
+            cout << "Item " << m_items[i].m_id << " Energy: " << m_items[i].m_energy << "Time: " << m_items[i].m_workigtime << " Profit: " << m_items[i].m_profit << endl;
         }
     }
 
@@ -55,48 +55,49 @@ namespace gap
     }
 
     // binの容量制約のみを考慮してDPを行う
-    void CKnapsack::DpUnderConstraintSize()
+    void CKnapsack::DpUnderConstraintSize(const int constraint_time)
     {
         /* Here we do not optimize the space usage from O(nW) to O(W),
          * since we need to trace the chose items later.
          */
-        vector<vector<int>> d(m_items.size() + 1, vector<int>(m_bin.m_size + 1, 0));
+
+        vector<vector<pair<int, int>>> d(m_items.size() + 1, vector<pair<int, int>>(m_bin.m_size + 1, {0, 0}));
         for (int i = 1; i <= m_items.size(); ++i)
         {
             for (int j = 1; j <= m_bin.m_size; ++j)
             {
-                if (m_items[i - 1].m_weight <= j)
+                if (m_items[i - 1].m_energy <= j)
                 {
-                    int t = d[i - 1][j - m_items[i - 1].m_weight] + m_items[i - 1].m_profit;
-                    if (t > d[i - 1][j])
-                        d[i][j] = t;
+                    int new_profit = d[i - 1][j - m_items[i - 1].m_energy].first + m_items[i - 1].m_profit;
+                    int new_time = d[i - 1][j - m_items[i - 1].m_energy].second + m_items[i - 1].m_workigtime;
+
+                    if (new_profit > d[i - 1][j].first && new_time <= constraint_time)
+                    {
+                        d[i][j] = {new_profit, new_time};
+                    }
                     else
+                    {
                         d[i][j] = d[i - 1][j];
+                    }
                 }
                 else
+                {
                     d[i][j] = d[i - 1][j];
+                }
             }
         }
-        m_maxprofit = d[m_items.size()][m_bin.m_size];
+        m_maxprofit = d[m_items.size()][m_bin.m_size].first;
         // Trace the chose items
         int w = m_bin.m_size;
         for (int i = m_items.size(); i > 0; --i)
         {
-            if (d[i][w] != d[i - 1][w])
+            if (d[i][w].first != d[i - 1][w].first)
             {
                 // Item i is chose, continue tracing d[i - 1][w - w(i)]
                 m_items[i - 1].m_assignedbinid = m_bin.m_id;
-                w -= m_items[i - 1].m_weight;
+                w -= m_items[i - 1].m_energy;
             }
         }
-
-        // Print the dp matrix
-        //     for(int i = 1; i <= m_items.size(); ++i)
-        //     {
-        //         for(int j = 0; j <= m_bin.m_size; ++j)
-        //             cout<<d[i][j]<<" ";
-        //         cout<<endl;
-        //     }
     }
 
     // todo: ロボットの作業時間の制約を満たすように、DPを行う。ただし、bin.sizeの制約はない。m_sizematrixで消費した分だけchargingを追加する。
