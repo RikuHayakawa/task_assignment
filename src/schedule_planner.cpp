@@ -178,8 +178,12 @@ namespace schedule_planner
         return round(value * factor) / factor;  // 四捨五入して元のスケールに戻す
     }
 
-    // 充電ステーションの競合数を計算
-    double SchedulePlanner::calculateValue(const std::vector<int> &charge, int stationCapacity)
+    /**
+     * calculateValue
+     * @brief 競合数と標準偏差を計算, 評価値を算出
+     * @return std::tuple<int, double, double> 競合数, 標準偏差, 評価値
+     */
+    std::tuple<int, double, double> SchedulePlanner::calculateValue(const std::vector<int> &charge, int stationCapacity)
     {
         // 評価値の計算
         // 競合数 * 重み + 標準偏差 * 重み で評価値を算出
@@ -208,7 +212,11 @@ namespace schedule_planner
         }
         standardDeviation = roundToDecimalPlaces(sqrt(variance / charge.size()), 2);
 
-        return overflow * weightOverflow + standardDeviation * weightStandardDeviation;
+        return {
+            overflow,
+            standardDeviation,
+            weightOverflow * overflow + weightStandardDeviation * standardDeviation,
+        };
     }
 
     // DPで問題を解く関数
@@ -242,12 +250,12 @@ namespace schedule_planner
                     }
 
                     // 競合数を計算
-                    double overflow = calculateValue(nextCharge, stationCapacity);
-
+                    std::tuple<int, double, double> result = calculateValue(nextCharge, stationCapacity);
+                    double value = std::get<2>(result);
                     // DPテーブルを更新
-                    if (dpNext.find(nextCharge) == dpNext.end() || dpNext[nextCharge] > overflow)
+                    if (dpNext.find(nextCharge) == dpNext.end() || dpNext[nextCharge] > value)
                     {
-                        dpNext[nextCharge] = overflow;
+                        dpNext[nextCharge] = value;
                         trace[nextCharge] = {k, currentCharge};
                     }
                 }
@@ -255,16 +263,14 @@ namespace schedule_planner
             dpPrev = dpNext;
         }
 
-        // dp
-
         // 最小競合数の探索
-        double minOverflow = 100000;
+        double minValue = 1000000000;
         vector<int> bestCharge;
-        for (auto &[charge, overflow] : dpPrev)
+        for (auto &[charge, value] : dpPrev)
         {
-            if (overflow < minOverflow)
+            if (value < minValue)
             {
-                minOverflow = overflow;
+                minValue = value;
                 bestCharge = charge;
             }
         }
@@ -279,7 +285,7 @@ namespace schedule_planner
         }
 
         // 結果の出力
-        cout << "Minimum Overflow: " << minOverflow << endl;
+        cout << "Minimum Value: " << minValue << endl;
         for (int i = 0; i < toDecideNum; ++i)
         {
             cout << "Robot " << m_schedule_options[i][m_selected_index_array[i]].m_robot_id << ": Option " << m_selected_index_array[i] << " - ";
