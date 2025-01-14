@@ -88,17 +88,17 @@ namespace gap
             cout << "Case " << casenum << ":" << endl;
             CGap gap;
             vector<int> sizes(binnum);
+            vector<int> initial_sizes(binnum);
             file >> gap.constaint_time;
             file >> gap.m_guaranteed_energy;
             for (int i = 0; i < binnum; ++i)
             {
-                int size;
-                file >> size;
-                sizes[i] = (size - gap.m_guaranteed_energy) > 0 ? size - gap.m_guaranteed_energy : 0;
+                file >> initial_sizes[i];
+                sizes[i] = (initial_sizes[i] - gap.m_guaranteed_energy) > 0 ? initial_sizes[i] - gap.m_guaranteed_energy : 0;
                 // 充電が必要な場合
-                if ((size - gap.m_guaranteed_energy) < 0)
+                if ((initial_sizes[i] - gap.m_guaranteed_energy) < 0)
                 {
-                    gap.m_charge_time_for_guaranteed_energy[i + 1] = -(size - gap.m_guaranteed_energy);
+                    gap.m_charge_time_for_guaranteed_energy[i + 1] = -(initial_sizes[i] - gap.m_guaranteed_energy);
                 }
             }
             vector<int> max_sizes(binnum);
@@ -108,7 +108,7 @@ namespace gap
             }
             for (int i = 0; i < binnum; ++i)
             {
-                CBin bin(i + 1, sizes[i], max_sizes[i], sizes[i]);
+                CBin bin(i + 1, sizes[i], max_sizes[i], initial_sizes[i]);
                 gap.AddBin(bin);
             }
             for (int i = 0; i < stationnum; ++i)
