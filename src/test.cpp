@@ -109,31 +109,24 @@ namespace gap
             timer::Timer gapForConstraintSizeTimer;
             gapForConstraintSizeTimer.start();
             gap.ApproximateForConstraintSize();
-            // bins dispaly assignments
-            for (int i = 0; i < gap.m_bins.size(); i++)
-            {
-                gap.m_bins[i].displayAssignments();
-            }
             gapForConstraintSizeTimer.stop();
-            gapForConstraintSizeTimer.elapsedSeconds();
 
             // timer for gapForConstraintTime
             timer::Timer gapForConstraintTimeTimer;
             gapForConstraintTimeTimer.start();
             gap.ApproximateForConstraintTime();
-            // bins dispaly assignments
-            for (int i = 0; i < gap.m_bins.size(); i++)
-            {
-                gap.m_bins[i].displayAssignments();
-            }
             gapForConstraintTimeTimer.stop();
-            gapForConstraintTimeTimer.elapsedSeconds();
 
             timer::Timer schedulePlanTimer;
             schedulePlanTimer.start();
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
             schedulePlanTimer.stop();
-            schedulePlanTimer.elapsedSeconds();
+            const vector<int> initial_occuption_all = gap.updateInitialAllBainary();
+            // m_bins print
+            for (int i = 0; i < gap.m_bins.size(); i++)
+            {
+                gap.m_bins[i].Print();
+            }
             // m_chargings print
             for (int i = 0; i < gap.m_chargings.size(); i++)
             {
@@ -145,19 +138,9 @@ namespace gap
                 gap.m_stations[i].Print();
             }
             cout << endl;
-            cout << "Occupation all: ";
-            for (int i = 0; i < schedulePlanner.m_occupation_all.size(); i++)
-            {
-                cout << schedulePlanner.m_occupation_all[i] << " ";
-            }
-            const std::tuple<int, double, double> result = schedulePlanner.calculateValue(schedulePlanner.m_occupation_all, gap.m_stations[0].m_capacity);
-            cout << endl
-                 << "Schedule value: " << std::get<2>(result) << endl;
             exec_result::ExecResult execResult(test_id, itemnum, binnum, gap.constaint_time, gap.m_guaranteed_energy,
                                                gap.m_stations[0].m_capacity, gapForConstraintSizeTimer.elapsedSeconds(), gapForConstraintTimeTimer.elapsedSeconds(), schedulePlanTimer.elapsedSeconds(),
-                                               gapForConstraintSizeTimer.elapsedSeconds() + gapForConstraintTimeTimer.elapsedSeconds() + schedulePlanTimer.elapsedSeconds(), schedulePlanner.m_occupation_all,
-                                               std::get<0>(result), std::get<1>(result), std::get<2>(result));
-
+                                               gapForConstraintSizeTimer.elapsedSeconds() + gapForConstraintTimeTimer.elapsedSeconds() + schedulePlanTimer.elapsedSeconds(), initial_occuption_all, schedulePlanner.m_occupation_all);
             execResult.Print();
 
             ++casenum;

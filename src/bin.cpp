@@ -23,66 +23,21 @@ namespace gap
     {
     }
 
-    // Remove an assignment at specified position
-    void CBin::removeAssignment(int pos, const int m_item_time)
-    {
-        if (pos < 0 || pos >= static_cast<int>(m_assignment.size()))
-        {
-            throw std::out_of_range("Invalid position for removal.");
-        }
-        m_assignment.erase(m_assignment.begin() + pos); // Remove the pair at the specified position
-        m_total_time -= m_item_time;
-    }
-
     // Add an assignment (pair)
-    void CBin::addAssignment(const std::string &name, const int id, const int m_item_time, const int m_item_energy)
+    void CBin::addAssignmentAndUpdateBin(const std::string &name, const int id, const int m_item_time, const int m_item_energy)
     {
         const int item_energy = (name == "charging") ? -m_item_energy : m_item_energy;
         m_total_time += m_item_time;
         m_rest_energy -= item_energy;
-        m_assignment.emplace_back(name, id); // Using emplace_back to add the pair directly
+        m_initial_assignment.addAssignment(name, id); // Using emplace_back to add the pair directly
     }
 
-    void CBin::resetAssignment()
+    void CBin::Print()
     {
-        m_total_time = 0;
-        m_rest_energy = m_initial_size;
-        m_assignment.clear();
-    }
-
-    // Swap assignments at specified positions
-    void CBin::swapAssignments(int startIndex, int endIndex)
-    {
-        if (startIndex < 0 || endIndex < 0 || startIndex >= static_cast<int>(m_assignment.size()) || endIndex >= static_cast<int>(m_assignment.size()))
-        {
-            throw std::out_of_range("Invalid positions for swap.");
-        }
-
-        if (startIndex == endIndex)
-        {
-            return; // No need to swap if the indices are the same
-        }
-
-        // Swap elements until reaching the middle of the range
-        while (startIndex < endIndex)
-        {
-            std::swap(m_assignment[endIndex - 1], m_assignment[endIndex]);
-            --endIndex;
-        }
-    }
-
-    // Display all assignments
-    void CBin::displayAssignments() const
-    {
-        std::cout << "Bin " << m_id << " assignment:" << std::endl;
-        for (const auto &assignment : m_assignment)
-        {
-            std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
-        }
-        // binの実行時間を表示
-        std::cout << "Total time: " << m_total_time << std::endl;
-        std::cout << "Rest energy: " << m_rest_energy << std::endl;
-        std::cout << "Size: " << m_size << std::endl
-                  << std::endl;
+        std::cout << "Bin id: " << m_id << ", size: " << m_size << ", max size: " << m_max_size << ", initial size: " << m_initial_size << ", Rest energy: " << m_rest_energy << std::endl;
+        std::cout << "Initial assignment: " << std::endl;
+        m_initial_assignment.displayAssignments();
+        std::cout << "Scheduled assignment: " << std::endl;
+        m_scheduled_assignment.displayAssignments();
     }
 };

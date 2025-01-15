@@ -7,37 +7,24 @@
 
 namespace schedule_planner
 {
-    ScheduleOption::ScheduleOption() : m_robot_id(-1), m_total_time(0), m_binary_option(std::vector<int>()), m_assignment(std::vector<std::pair<std::string, int>>())
+    ScheduleOption::ScheduleOption() : m_robot_id(-1), m_binary_option(std::vector<int>()), m_assignment(std::vector<std::pair<std::string, int>>())
     {
     }
-    ScheduleOption::ScheduleOption(const std::vector<std::pair<std::string, int>> &assignment, const int robot_id, std::vector<int> &binary_option) : m_binary_option(binary_option), m_robot_id(robot_id), m_assignment(assignment)
+    ScheduleOption::ScheduleOption(const std::vector<std::pair<std::string, int>> &assignment, const int robot_id) : m_robot_id(robot_id), m_assignment(assignment)
     {
     }
     ScheduleOption::~ScheduleOption()
     {
     }
-    // Remove an assignment at specified position
-    void ScheduleOption::removeAssignment(int pos, const int m_item_time)
-    {
-        if (pos < 0 || pos >= static_cast<int>(m_assignment.size()))
-        {
-            throw std::out_of_range("Invalid position for removal.");
-        }
-        m_assignment.erase(m_assignment.begin() + pos); // Remove the pair at the specified position
-        m_total_time -= m_item_time;
-    }
-
     // Add an assignment (pair)
-    void ScheduleOption::addAssignment(const std::string &name, const int id, const int m_item_time)
+    void ScheduleOption::addAssignment(const std::string &name, const int id)
     {
-        m_total_time += m_item_time;
         m_assignment.emplace_back(name, id); // Using emplace_back to add the pair directly
     }
 
     void ScheduleOption::resetAssignment()
     {
         m_assignment.clear();
-        m_total_time = 0;
     }
 
     // Swap assignments at specified positions
@@ -68,8 +55,13 @@ namespace schedule_planner
         {
             std::cout << "Name: " << assignment.first << ", ID: " << assignment.second << std::endl; // Display pair
         }
-        // binの実行時間を表示
-        std::cout << "Total time: " << m_total_time << std::endl;
+        // binary_optionを表示
+        std::cout << "Binary option: ";
+        for (const auto &option : m_binary_option)
+        {
+            std::cout << option << " ";
+        }
+        std::cout << std::endl;
     }
 
     void ScheduleOption::addAssignmentIfNotExists(const std::string &name, int id, std::vector<std::pair<std::string, int>> &before_assignment, std::vector<std::pair<std::string, int>> &assignment)

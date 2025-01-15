@@ -33,7 +33,6 @@ namespace timer
             std::cerr << "Timer is still running. Call stop() before measuring elapsed time." << std::endl;
             return 0.0;
         }
-        std::cout << "Elapsed Milliseconds: " << std::chrono::duration<double, std::milli>(endTime - startTime).count() << std::endl;
         return std::chrono::duration<double, std::milli>(endTime - startTime).count();
     }
 
@@ -44,7 +43,6 @@ namespace timer
             std::cerr << "Timer is still running. Call stop() before measuring elapsed time." << std::endl;
             return 0.0;
         }
-        std::cout << "Elapsed Seconds: " << std::chrono::duration<double>(endTime - startTime).count() << std::endl;
         return std::chrono::duration<double>(endTime - startTime).count();
     }
 }

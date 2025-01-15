@@ -28,7 +28,7 @@ namespace schedule_planner
 
             int charging_id = -1;
 
-            for (const auto &task : robot.m_assignment)
+            for (const auto &task : robot.m_initial_assignment.m_assignment)
             {
                 if (task.first == "charging")
                 {
@@ -323,32 +323,27 @@ namespace schedule_planner
             }
             if (selectedOptionIndex == -1 || optionsIndex == -1)
             {
-                selectedOption.m_binary_option = std::vector<int>(m_gap_instance->constaint_time, 0);
-                selectedOption.m_robot_id = robot.m_id;
-                selectedOption.m_assignment = robot.m_assignment;
-                selectedOption.m_total_time = robot.m_total_time;
-                robot.m_scheduled_assignment = selectedOption;
+                robot.m_scheduled_assignment = robot.m_initial_assignment;
                 continue;
             }
             // 充電タスクが存在する場合
             int chargingId = -1;
-            for (int j = 0; j < robot.m_assignment.size(); j++)
+            for (int j = 0; j < robot.m_initial_assignment.m_assignment.size(); j++)
             {
-                if (robot.m_assignment[j].first == "charging")
+                if (robot.m_initial_assignment.m_assignment[j].first == "charging")
                 {
-                    chargingId = robot.m_assignment[j].second;
+                    chargingId = robot.m_initial_assignment.m_assignment[j].second;
                     break;
                 }
             }
 
             selectedOption = m_schedule_options[optionsIndex][selectedOptionIndex];
-            selectedOption.m_total_time = robot.m_total_time;
             selectedOption.m_assignment.push_back(std::make_pair("charging", m_gap_instance->m_chargings[chargingId - 1].m_id));
-            for (int j = 0; j < robot.m_assignment.size(); j++)
+            for (int j = 0; j < robot.m_initial_assignment.m_assignment.size(); j++)
             {
-                if (robot.m_assignment[j].first == "task") // m_assignmentのidが一致しない場合に追加
+                if (robot.m_initial_assignment.m_assignment[j].first == "task") // m_assignmentのidが一致しない場合に追加
                 {
-                    selectedOption.addAssignmentIfNotExists("task", robot.m_assignment[j].second, m_schedule_options[optionsIndex][selectedOptionIndex].m_assignment, selectedOption.m_assignment);
+                    selectedOption.addAssignmentIfNotExists("task", robot.m_initial_assignment.m_assignment[j].second, m_schedule_options[optionsIndex][selectedOptionIndex].m_assignment, selectedOption.m_assignment);
                 }
             }
             assignChargingToStation(selectedOption, chargingId);
@@ -381,7 +376,7 @@ namespace schedule_planner
         {
             auto &robot = m_gap_instance->m_bins[i];
             cout << "Robot " << robot.m_id << " executes tasks:" << endl;
-            robot.displayAssignments();
+            // robot.displayAssignments();
         }
         cout << endl;
     }
