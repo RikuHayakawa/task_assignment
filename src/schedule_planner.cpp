@@ -4,6 +4,10 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <map>
+#include <tuple>
+using namespace std;
 
 namespace schedule_planner
 {
@@ -52,8 +56,6 @@ namespace schedule_planner
         displayScheduleOptions();
         solve(m_gap_instance->m_stations[0].m_capacity, m_gap_instance->constaint_time);
         setSelectedOptionForRobot();
-        // displayPreScheduleOptions();
-        // displaySelectedOption();
     }
 
     /**
@@ -260,6 +262,30 @@ namespace schedule_planner
                     }
                 }
             }
+
+            // ---ヒープを用いて状態を1000件に制限---
+            using State = pair<double, vector<int>>; // {評価値, 状態}
+            priority_queue<State> maxHeap;           // 最大ヒープ（評価値が大きい順）
+
+            for (auto &[state, value] : dpNext)
+            {
+                maxHeap.push({value, state}); // 状態をヒープに挿入
+                if (maxHeap.size() > 1000)
+                {
+                    maxHeap.pop();
+                }
+            }
+
+            // ヒープからdpNextを再構築
+            dpNext.clear();
+            while (!maxHeap.empty())
+            {
+                auto [value, state] = maxHeap.top();
+                maxHeap.pop();
+                dpNext[state] = value;
+            }
+            // ---ヒープを用いて状態を1000件に制限---
+
             dpPrev = dpNext;
         }
 
