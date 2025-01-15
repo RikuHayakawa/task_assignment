@@ -32,7 +32,7 @@ namespace gap
          * profitmatrix (item_num * bin_num)
          * --------------------------------------
          */
-        ifstream file("test/testcaseforgap.txt");
+        ifstream file("test/generatedtest.txt");
         string test_id;
         int casenum = 1, itemnum, binnum, stationnum;
         if (!file.is_open())
