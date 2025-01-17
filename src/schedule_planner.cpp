@@ -4,6 +4,10 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <map>
+#include <tuple>
+using namespace std;
 
 namespace schedule_planner
 {
@@ -28,7 +32,7 @@ namespace schedule_planner
 
             int charging_id = -1;
 
-            for (const auto &task : robot.m_assignment)
+            for (const auto &task : robot.m_initial_assignment.m_assignment)
             {
                 if (task.first == "charging")
                 {
@@ -52,8 +56,6 @@ namespace schedule_planner
         displayScheduleOptions();
         solve(m_gap_instance->m_stations[0].m_capacity, m_gap_instance->constaint_time);
         setSelectedOptionForRobot();
-        // displayPreScheduleOptions();
-        // displaySelectedOption();
     }
 
     /**
@@ -178,8 +180,12 @@ namespace schedule_planner
         return round(value * factor) / factor;  // 四捨五入して元のスケールに戻す
     }
 
-    // 充電ステーションの競合数を計算
-    double SchedulePlanner::calculateValue(const std::vector<int> &charge, int stationCapacity)
+    /**
+     * calculateValue
+     * @brief 競合数と標準偏差を計算, 評価値を算出
+     * @return std::tuple<int, double, double> 競合数, 標準偏差, 評価値
+     */
+    std::tuple<int, double, double> SchedulePlanner::calculateValue(const std::vector<int> &charge, int stationCapacity)
     {
         // 評価値の計算
         // 競合数 * 重み + 標準偏差 * 重み で評価値を算出
@@ -208,7 +214,11 @@ namespace schedule_planner
         }
         standardDeviation = roundToDecimalPlaces(sqrt(variance / charge.size()), 2);
 
-        return overflow * weightOverflow + standardDeviation * weightStandardDeviation;
+        return {
+            overflow,
+            standardDeviation,
+            weightOverflow * overflow + weightStandardDeviation * standardDeviation,
+        };
     }
 
     // DPで問題を解く関数
@@ -242,29 +252,51 @@ namespace schedule_planner
                     }
 
                     // 競合数を計算
-                    double overflow = calculateValue(nextCharge, stationCapacity);
-
+                    std::tuple<int, double, double> result = calculateValue(nextCharge, stationCapacity);
+                    double value = std::get<2>(result);
                     // DPテーブルを更新
-                    if (dpNext.find(nextCharge) == dpNext.end() || dpNext[nextCharge] > overflow)
+                    if (dpNext.find(nextCharge) == dpNext.end() || dpNext[nextCharge] > value)
                     {
-                        dpNext[nextCharge] = overflow;
+                        dpNext[nextCharge] = value;
                         trace[nextCharge] = {k, currentCharge};
                     }
                 }
             }
+
+            // ---ヒープを用いて状態を1000件に制限---
+            using State = pair<double, vector<int>>; // {評価値, 状態}
+            priority_queue<State> maxHeap;           // 最大ヒープ（評価値が大きい順）
+
+            for (auto &[state, value] : dpNext)
+            {
+                maxHeap.push({value, state}); // 状態をヒープに挿入
+                if (maxHeap.size() > 1000)
+                {
+                    maxHeap.pop();
+                }
+            }
+
+            // ヒープからdpNextを再構築
+            dpNext.clear();
+            while (!maxHeap.empty())
+            {
+                auto [value, state] = maxHeap.top();
+                maxHeap.pop();
+                dpNext[state] = value;
+            }
+            // ---ヒープを用いて状態を1000件に制限---
+
             dpPrev = dpNext;
         }
 
-        // dp
-
         // 最小競合数の探索
-        double minOverflow = 100000;
+        double minValue = 1000000000;
         vector<int> bestCharge;
-        for (auto &[charge, overflow] : dpPrev)
+        for (auto &[charge, value] : dpPrev)
         {
-            if (overflow < minOverflow)
+            if (value < minValue)
             {
-                minOverflow = overflow;
+                minValue = value;
                 bestCharge = charge;
             }
         }
@@ -279,7 +311,7 @@ namespace schedule_planner
         }
 
         // 結果の出力
-        cout << "Minimum Overflow: " << minOverflow << endl;
+        cout << "Minimum Value: " << minValue << endl;
         for (int i = 0; i < toDecideNum; ++i)
         {
             cout << "Robot " << m_schedule_options[i][m_selected_index_array[i]].m_robot_id << ": Option " << m_selected_index_array[i] << " - ";
@@ -317,32 +349,27 @@ namespace schedule_planner
             }
             if (selectedOptionIndex == -1 || optionsIndex == -1)
             {
-                selectedOption.m_binary_option = std::vector<int>(m_gap_instance->constaint_time, 0);
-                selectedOption.m_robot_id = robot.m_id;
-                selectedOption.m_assignment = robot.m_assignment;
-                selectedOption.m_total_time = robot.m_total_time;
-                robot.m_scheduled_assignment = selectedOption;
+                robot.m_scheduled_assignment = robot.m_initial_assignment;
                 continue;
             }
             // 充電タスクが存在する場合
             int chargingId = -1;
-            for (int j = 0; j < robot.m_assignment.size(); j++)
+            for (int j = 0; j < robot.m_initial_assignment.m_assignment.size(); j++)
             {
-                if (robot.m_assignment[j].first == "charging")
+                if (robot.m_initial_assignment.m_assignment[j].first == "charging")
                 {
-                    chargingId = robot.m_assignment[j].second;
+                    chargingId = robot.m_initial_assignment.m_assignment[j].second;
                     break;
                 }
             }
 
             selectedOption = m_schedule_options[optionsIndex][selectedOptionIndex];
-            selectedOption.m_total_time = robot.m_total_time;
             selectedOption.m_assignment.push_back(std::make_pair("charging", m_gap_instance->m_chargings[chargingId - 1].m_id));
-            for (int j = 0; j < robot.m_assignment.size(); j++)
+            for (int j = 0; j < robot.m_initial_assignment.m_assignment.size(); j++)
             {
-                if (robot.m_assignment[j].first == "task") // m_assignmentのidが一致しない場合に追加
+                if (robot.m_initial_assignment.m_assignment[j].first == "task") // m_assignmentのidが一致しない場合に追加
                 {
-                    selectedOption.addAssignmentIfNotExists("task", robot.m_assignment[j].second, m_schedule_options[optionsIndex][selectedOptionIndex].m_assignment, selectedOption.m_assignment);
+                    selectedOption.addAssignmentIfNotExists("task", robot.m_initial_assignment.m_assignment[j].second, m_schedule_options[optionsIndex][selectedOptionIndex].m_assignment, selectedOption.m_assignment);
                 }
             }
             assignChargingToStation(selectedOption, chargingId);
@@ -375,7 +402,7 @@ namespace schedule_planner
         {
             auto &robot = m_gap_instance->m_bins[i];
             cout << "Robot " << robot.m_id << " executes tasks:" << endl;
-            robot.displayAssignments();
+            // robot.displayAssignments();
         }
         cout << endl;
     }

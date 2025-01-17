@@ -11,9 +11,11 @@ STATION_DIR = station
 CHARGING_DIR = charging
 SCHEDULE_OPTION_DIR = schedule_option
 SCHEDULE_PLANNER_DIR = schedule_planner
+TIME_DIR = timer
+EXEC_RESULT_DIR = exec_result
 
 # 各オブジェクトファイルのパスを指定
-DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o $(BUILD_DIR)/charging.o $(BUILD_DIR)/schedule_option.o ${BUILD_DIR}/schedule_planner.o
+DEPENDENCIES = $(BUILD_DIR)/item.o $(BUILD_DIR)/bin.o $(BUILD_DIR)/knapsack.o $(BUILD_DIR)/gap.o $(BUILD_DIR)/test.o $(BUILD_DIR)/station.o $(BUILD_DIR)/charging.o $(BUILD_DIR)/schedule_option.o ${BUILD_DIR}/schedule_planner.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/exec_result.o
 
 # 実行ファイルの名前
 TARGET = $(BIN_DIR)/gap

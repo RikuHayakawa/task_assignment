@@ -4,17 +4,6 @@
  * Created on 2014-08-10.
  */
 
-/**
- * todo
- * - アイテムに時間の概念を追加する（一度消したが、再度追加する）
- * - 充電制約に必要な情報
- * - ロボットと充電ステーションの関係、割り当てられているタスクの情報と実行時間、順序
- * 　  bin model を拡張して、アイテムの割り当てられた順番を記録する（実行順にアイテムのidを記録する、時間はアイテムをたどればわかる）
- * 　　例：　bin に　アイテム　itme_1, item_2, item_3 が割り当てられた場合  [item_1, item_2, item_3] 充電と区別するために、"item_"をつける.
- *          充電の場合は、"charging_"をつける
- * - Print
- */
-
 #include "gap.h"
 #include "item.h"
 #include "bin.h"
@@ -239,8 +228,8 @@ namespace gap
             if (items[i].m_assignedbinid != -1)
             {
                 m_items[items[i].m_id - 1].SetAssignedBinId(items[i].m_assignedbinid, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1], m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
-                m_bins[items[i].m_assignedbinid - 1].addAssignment("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
-                                                                   m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
+                m_bins[items[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
+                                                                               m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
             }
         }
     }
@@ -252,9 +241,43 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 chargings[i].SetAssignedBinId(chargings[i].m_assignedbinid, chargings[i].m_time, chargings[i].m_charge_energy);
-                m_bins[chargings[i].m_assignedbinid - 1].addAssignment("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
+                m_bins[chargings[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
             }
         }
+    }
+
+    vector<int> CGap::updateInitialAllBainary()
+    {
+        // m_binsのbaiary optionを計算する
+        vector<int> all_binary(constaint_time, 0);
+        for (int i = 0; i < m_bins.size(); ++i)
+        {
+            m_bins[i].m_initial_assignment.m_binary_option = vector<int>(constaint_time, 0);
+            int baianry_time_step = 0;
+
+            for (int j = 0; j < m_bins[i].m_initial_assignment.m_assignment.size(); ++j)
+            {
+                // taskの場合0, chargingの場合1
+                if (m_bins[i].m_initial_assignment.m_assignment[j].first == "task")
+                {
+                    for (int k = 0; k < m_timematrix[m_bins[i].m_initial_assignment.m_assignment[j].second - 1][i]; ++k)
+                    {
+                        m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step] = 0;
+                        baianry_time_step++;
+                    }
+                }
+                else if (m_bins[i].m_initial_assignment.m_assignment[j].first == "charging")
+                {
+                    for (int k = 0; k < m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time; ++k)
+                    {
+                        m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step] = 1;
+                        all_binary[baianry_time_step] += 1;
+                        baianry_time_step++;
+                    }
+                }
+            }
+        }
+        return all_binary;
     }
 
     int CGap::GetMinChargeEfficiency()

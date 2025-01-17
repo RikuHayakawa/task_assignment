@@ -10,6 +10,8 @@
 #include "knapsack.h"
 #include "gap.h"
 #include "schedule_planner.h"
+#include "timer.h"
+#include "exec_result.h"
 #include <iostream>
 #include <fstream>
 
@@ -17,50 +19,6 @@ using namespace std;
 
 namespace gap
 {
-    // void TestKnapsack()
-    // {
-    //     /* Get input data from testcaseforknapsack.txt
-    //      * Format:
-    //      * --------------------------------------
-    //      * item_num bin_size
-    //      * item_size1 item_size2 ...
-    //      * item_profit1 item_profit2 ...
-    //      * --------------------------------------
-    //      */
-    //     ifstream file("test/testcaseforknapsack.txt");
-    //     int casenum = 1, itemnum, binsize;
-    //     if (file.is_open())
-    //     {
-    //         while (file >> itemnum >> binsize)
-    //         {
-    //             cout << "Case " << casenum << ":" << endl;
-    //             CKnapsack knapsack;
-    //             CBin bin(1, binsize, binsize, 1, 1);
-    //             knapsack.SetBin(bin);
-    //             for (int i = 0; i < itemnum; ++i)
-    //             {
-    //                 int weight;
-    //                 file >> weight;
-    //                 // CItem item(i + 1, weight, -1);
-    //                 // knapsack.AddItem(item);
-    //             }
-    //             for (int i = 0; i < itemnum; ++i)
-    //             {
-    //                 int profit;
-    //                 file >> profit;
-    //                 knapsack.m_items[i].m_profit = profit;
-    //             }
-    //             knapsack.Print();
-    //             knapsack.DpUnderConstraintSize();
-    //             cout << "Max Profit:" << knapsack.m_maxprofit << endl;
-    //             knapsack.PrintAssignment();
-    //             cout << endl;
-    //             ++casenum;
-    //         }
-    //         file.close();
-    //     }
-    // }
-
     void TestGap()
     {
         /* Get input data from testcaseforgap.txt
@@ -74,7 +32,7 @@ namespace gap
          * profitmatrix (item_num * bin_num)
          * --------------------------------------
          */
-        ifstream file("test/testcaseforgap.txt");
+        ifstream file("test/generatedtest.txt");
         string test_id;
         int casenum = 1, itemnum, binnum, stationnum;
         if (!file.is_open())
@@ -147,41 +105,44 @@ namespace gap
             }
             // gap.Print();
             cout << endl;
+            // timer for gapForConstraintSize
+            timer::Timer gapForConstraintSizeTimer;
+            gapForConstraintSizeTimer.start();
             gap.ApproximateForConstraintSize();
-            // bins dispaly assignments
-            for (int i = 0; i < gap.m_bins.size(); i++)
-            {
-                gap.m_bins[i].displayAssignments();
-            }
+            gapForConstraintSizeTimer.stop();
 
+            // timer for gapForConstraintTime
+            timer::Timer gapForConstraintTimeTimer;
+            gapForConstraintTimeTimer.start();
             gap.ApproximateForConstraintTime();
-            // bins dispaly assignments
+            gapForConstraintTimeTimer.stop();
+
+            timer::Timer schedulePlanTimer;
+            schedulePlanTimer.start();
+            schedule_planner::SchedulePlanner schedulePlanner(&gap);
+            schedulePlanTimer.stop();
+            const vector<int> initial_occuption_all = gap.updateInitialAllBainary();
+            // m_bins print
             for (int i = 0; i < gap.m_bins.size(); i++)
             {
-                gap.m_bins[i].displayAssignments();
+                gap.m_bins[i].Print();
             }
-
-            schedule_planner::SchedulePlanner schedulePlanner(&gap);
             // m_chargings print
             for (int i = 0; i < gap.m_chargings.size(); i++)
             {
                 gap.m_chargings[i].Print();
             }
-            cout << endl;
             // m_stations print
             for (int i = 0; i < gap.m_stations.size(); i++)
             {
                 gap.m_stations[i].Print();
             }
             cout << endl;
-            cout << "Occupation all: ";
-            for (int i = 0; i < schedulePlanner.m_occupation_all.size(); i++)
-            {
-                cout << schedulePlanner.m_occupation_all[i] << " ";
-            }
-            const double value = schedulePlanner.calculateValue(schedulePlanner.m_occupation_all, gap.m_stations[0].m_capacity);
-            cout << endl
-                 << "Schedule value: " << value << endl;
+            exec_result::ExecResult execResult(test_id, itemnum, binnum, gap.constaint_time, gap.m_guaranteed_energy,
+                                               gap.m_stations[0].m_capacity, gapForConstraintSizeTimer.elapsedSeconds(), gapForConstraintTimeTimer.elapsedSeconds(), schedulePlanTimer.elapsedSeconds(),
+                                               gapForConstraintSizeTimer.elapsedSeconds() + gapForConstraintTimeTimer.elapsedSeconds() + schedulePlanTimer.elapsedSeconds(), initial_occuption_all, schedulePlanner.m_occupation_all);
+            execResult.Print();
+
             ++casenum;
         }
         file.close();
