@@ -121,7 +121,7 @@ namespace gap
             schedulePlanTimer.start();
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
             schedulePlanTimer.stop();
-            const vector<int> initial_occuption_all = gap.updateInitialAllBainary();
+            const vector<int> initial_occuption_all = gap.updateInitialAllBinary();
             // m_bins print
             for (int i = 0; i < gap.m_bins.size(); i++)
             {

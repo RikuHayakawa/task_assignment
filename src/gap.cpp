@@ -246,7 +246,7 @@ namespace gap
         }
     }
 
-    vector<int> CGap::updateInitialAllBainary()
+    vector<int> CGap::updateInitialAllBinary()
     {
         // m_binsのbaiary optionを計算する
         vector<int> all_binary(constaint_time, 0);
