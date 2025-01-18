@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <tuple>
+#include <sstream>
 #include <exec_result.h>
 #include <algorithm>
 #include <schedule_planner.h>
@@ -90,6 +91,27 @@ namespace exec_result
             cerr << "Error: Idle time is not 0." << endl;
             exit(1);
         }
+
+        outputResultsToFile("output.csv",
+                            test_id,
+                            m_total_tasks,
+                            m_total_robots,
+                            m_constraint_time,
+                            m_guaranteed_energy,
+                            m_station_capacity,
+                            m_gap_for_constraint_size_time,
+                            m_gap_for_constraint_time,
+                            m_schedule_planner_time,
+                            m_exec_time,
+                            m_initial_occupation,
+                            m_schedule_occupation,
+                            m_initial_result,
+                            m_scheduled_result,
+                            m_assigned_tasks,
+                            m_initial_charging_average,
+                            m_scheduled_charging_average,
+                            m_charging_robot_num,
+                            rest_energy_average);
     }
     ExecResult::~ExecResult()
     {
@@ -108,6 +130,140 @@ namespace exec_result
         }
         average /= occupation_per_time.size();
         result = std::make_tuple(std::get<0>(initialResult), std::get<1>(initialResult), std::get<2>(initialResult), average, max);
+    }
+
+    // Function to check if an ID exists in the file
+    bool ExecResult::isTestIdExists(const std::string &filename, const std::string &test_id)
+    {
+        std::ifstream file(filename);
+        if (!file.is_open())
+        {
+            return false; // File doesn't exist
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::istringstream iss(line);
+            std::string existing_id;
+            if (std::getline(iss, existing_id, ','))
+            {
+                if (existing_id == test_id)
+                {
+                    return true; // Match found
+                }
+            }
+        }
+
+        file.close();
+        return false; // No match found
+    }
+
+    void ExecResult::outputResultsToFile(
+        const std::string &filename,
+        const std::string &test_id, // UUID for Test ID
+        int m_total_tasks,
+        int m_total_robots,
+        double m_constraint_time,
+        double m_guaranteed_energy,
+        int m_station_capacity,
+        double m_gap_for_constraint_size_time,
+        double m_gap_for_constraint_time,
+        double m_schedule_planner_time,
+        double m_exec_time,
+        const std::vector<int> &m_initial_occupation,
+        const std::vector<int> &m_schedule_occupation,
+        const std::tuple<int, double, double, double, int> &m_initial_result,
+        const std::tuple<int, double, double, double, int> &m_scheduled_result,
+        int m_assigned_tasks,
+        double m_initial_charging_average,
+        double m_scheduled_charging_average,
+        int m_charging_robot_num,
+        double rest_energy_average)
+    {
+        if (isTestIdExists(filename, test_id))
+        {
+            std::cerr << "Test ID " << test_id << " already exists in the file. Aborting write." << std::endl;
+            return;
+        }
+        std::ifstream file_in(filename);
+        bool file_exists = file_in.good();
+        file_in.close();
+
+        std::ofstream file(filename, std::ios::app); // Append mode
+        file << "\xEF\xBB\xBF";                      // Write UTF-8 BOM
+        if (!file.is_open())
+        {
+            std::cerr << "Failed to open file: " << filename << std::endl;
+            return;
+        }
+
+        if (!file_exists)
+        {
+            // Write headers in Japanese if the file does not exist
+            file << "テストID,"
+                 << "タスクの総数,"
+                 << "ロボットの総数,"
+                 << "指定した実行時間,"
+                 << "終了時の充電残量,"
+                 << "ステーション容量,"
+                 << "Fase1の実行時間,"
+                 << "Fase2の実行時間,"
+                 << "充電計画の実行時間,"
+                 << "総実行時間,";
+            for (int i = 0; i < m_initial_occupation.size(); i++)
+            {
+                file << "Fase1: 時間ごとの収容状況,";
+            }
+            for (int i = 0; i < m_schedule_occupation.size(); i++)
+            {
+                file << "Fase2: 時間ごとの収容状況,";
+            }
+            file << "Fase1: 競合数,"
+                 << "Fase1: 標準偏差,"
+                 << "Fase1: 評価値,"
+                 << "Fase1: 平均収容率,"
+                 << "Fase1: 最大収容数,"
+                 << "Fase2: 競合数,"
+                 << "Fase2: 標準偏差,"
+                 << "Fase2: 評価値,"
+                 << "Fase2: 平均収容率,"
+                 << "Fase2: 最大収容数,"
+                 << "割り当てタスク数,"
+                 << "Fase1: 充電平均,"
+                 << "Fase2: 充電平均,"
+                 << "充電ロボット数,"
+                 << "残りエネルギー平均" << "\r\n";
+        }
+
+        // Write data to file
+        file << test_id << "," << m_total_tasks << ","
+             << m_total_robots << "," << m_constraint_time << ","
+             << m_guaranteed_energy << "," << m_station_capacity << ","
+             << m_gap_for_constraint_size_time << "," << m_gap_for_constraint_time << ","
+             << m_schedule_planner_time << "," << m_exec_time << ",";
+
+        for (const auto &occ : m_initial_occupation)
+            file << occ << ",";
+        for (const auto &occ : m_schedule_occupation)
+            file << occ << ",";
+
+        file << std::get<0>(m_initial_result) << ","
+             << std::get<1>(m_initial_result) << ","
+             << std::get<2>(m_initial_result) << ","
+             << std::get<3>(m_initial_result) << ","
+             << std::get<4>(m_initial_result) << ","
+             << std::get<0>(m_scheduled_result) << ","
+             << std::get<1>(m_scheduled_result) << ","
+             << std::get<2>(m_scheduled_result) << ","
+             << std::get<3>(m_scheduled_result) << ","
+             << std::get<4>(m_scheduled_result) << ","
+             << m_assigned_tasks << "," << m_initial_charging_average << ","
+             << m_scheduled_charging_average << "," << m_charging_robot_num << ","
+             << rest_energy_average << std::endl;
+
+        file.close();
+        std::cout << "Results written to " << filename << std::endl;
     }
 
     void ExecResult::Print()

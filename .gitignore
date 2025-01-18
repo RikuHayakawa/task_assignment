@@ -2,3 +2,4 @@
 # Ignore build and bin directories
 build/
 bin/
+output.csv

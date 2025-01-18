@@ -34,6 +34,8 @@ namespace exec_result
         double rest_energy_average = 0;                                  // 充電残量の平均
 
         void calculateStationOccupation(std::vector<int> occupation_per_time, std::tuple<int, double, double, double, int> &result);
+        bool isTestIdExists(const std::string &filename, const std::string &test_id);
+        void outputResultsToFile(const std::string &filename, const std::string &test_id, int m_total_tasks, int m_total_robots, double m_constraint_time, double m_guaranteed_energy, int m_station_capacity, double m_gap_for_constraint_size_time, double m_gap_for_constraint_time, double m_schedule_planner_time, double m_exec_time, const std::vector<int> &m_initial_occupation, const std::vector<int> &m_schedule_occupation, const std::tuple<int, double, double, double, int> &m_initial_result, const std::tuple<int, double, double, double, int> &m_scheduled_result, int m_assigned_tasks, double m_initial_charging_average, double m_scheduled_charging_average, int m_charging_robot_num, double rest_energy_average);
 
     public:
         ExecResult();
