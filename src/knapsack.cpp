@@ -71,7 +71,7 @@ namespace gap
                     int new_profit = d[i - 1][j - m_items[i - 1].m_energy].first + m_items[i - 1].m_profit;
                     int new_time = d[i - 1][j - m_items[i - 1].m_energy].second + m_items[i - 1].m_workigtime;
 
-                    if (new_profit > d[i - 1][j].first && new_time <= constraint_time)
+                    if (new_profit > d[i - 1][j].first && new_time <= (constraint_time - m_bin.m_charge_time_for_guarantee))
                     {
                         d[i][j] = {new_profit, new_time};
                     }
@@ -113,7 +113,7 @@ namespace gap
             return;
         }
 
-        int max_time = constraint_time - m_bin.m_initial_assignment.m_total_time;
+        int max_time = constraint_time - m_bin.m_initial_assignment.m_total_time - m_bin.m_charge_time_for_guarantee;
         vector<vector<int>> d(m_items.size() + 1, vector<int>(max_time + 1, 0));
         for (int i = 1; i <= m_items.size(); ++i)
         {

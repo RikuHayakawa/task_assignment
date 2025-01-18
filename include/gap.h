@@ -37,7 +37,6 @@ namespace gap
         int constaint_time;
         int m_guaranteed_energy;
         // id: bin id, value: charge time
-        map<int, int> m_charge_time_for_guaranteed_energy;
 
     public:
         CGap();
