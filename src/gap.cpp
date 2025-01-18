@@ -124,7 +124,7 @@ namespace gap
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
                 m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][j] = charging_time;
             }
-            knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
+            knapsack.DpUnderConstraintTime(constaint_time, m_guaranteed_energy, GetMinChargeEfficiency(), itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
             {

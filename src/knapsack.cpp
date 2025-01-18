@@ -101,7 +101,7 @@ namespace gap
     }
 
     // todo: ロボットの作業時間の制約を満たすように、DPを行う。ただし、bin.sizeの制約はない。m_sizematrixで消費した分だけchargingを追加する。
-    void CKnapsack::DpUnderConstraintTime(const int constraint_time, vector<int> &itemSize)
+    void CKnapsack::DpUnderConstraintTime(const int constraint_time, const int guaranteed_energy, const int charge_efficiency, vector<int> &itemSize)
     {
         // 制約時間が既存の作業時間を下回る場合、エラーを出力して処理を終了
         if (constraint_time < m_bin.m_initial_assignment.m_total_time)
@@ -113,7 +113,12 @@ namespace gap
             return;
         }
 
-        int max_time = constraint_time - m_bin.m_initial_assignment.m_total_time - m_bin.m_charge_time_for_guarantee;
+        int max_time = constraint_time - m_bin.m_initial_assignment.m_total_time;
+        if (m_bin.m_initial_assignment.m_rest_energy < guaranteed_energy)
+        {
+            max_time -= (guaranteed_energy - m_bin.m_initial_assignment.m_rest_energy) / charge_efficiency;
+            cout << "max_time: " << max_time << endl;
+        }
         vector<vector<int>> d(m_items.size() + 1, vector<int>(max_time + 1, 0));
         for (int i = 1; i <= m_items.size(); ++i)
         {
