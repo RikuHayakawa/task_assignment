@@ -66,7 +66,7 @@ namespace gap
             }
             for (int i = 0; i < binnum; ++i)
             {
-                CBin bin(i + 1, sizes[i], max_sizes[i], initial_sizes[i]);
+                CBin bin(i + 1, sizes[i], max_sizes[i], initial_sizes[i], gap.constaint_time);
                 gap.AddBin(bin);
             }
             for (int i = 0; i < stationnum; ++i)

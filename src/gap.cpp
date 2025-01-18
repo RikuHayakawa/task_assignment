@@ -145,22 +145,22 @@ namespace gap
                 }
             }
         }
-        // 割り当てられたアイテムから充電時間を計算する
-        vector<int> chargingTimes(m_bins.size(), 0);
-        for (int i = 0; i < m_rest_items.size(); ++i)
-        {
-            if (m_rest_items[i].m_assignedbinid != -1)
-            {
-                chargingTimes[m_rest_items[i].m_assignedbinid - 1] += m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][m_rest_items[i].m_assignedbinid - 1];
-            }
-        }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
         int charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            if (chargingTimes[i] > 0)
+            int task_total_time = 0;
+            for (int j = 0; j < m_items.size(); ++j)
             {
-                CCharging charging(charging_id, chargingTimes[i], chargingTimes[i] * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
+                if (m_items[j].m_assignedbinid == m_bins[i].m_id)
+                {
+                    task_total_time += m_timematrix[m_items[j].m_id - 1][m_items[j].m_assignedbinid - 1];
+                }
+            }
+            if (task_total_time < constaint_time)
+            {
+
+                CCharging charging(charging_id, constaint_time - task_total_time, (constaint_time - task_total_time) * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
                 AddCharging(charging);
                 charging_id++;
             }
@@ -228,8 +228,8 @@ namespace gap
             if (items[i].m_assignedbinid != -1)
             {
                 m_items[items[i].m_id - 1].SetAssignedBinId(items[i].m_assignedbinid, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1], m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
-                m_bins[items[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
-                                                                               m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
+                m_bins[items[i].m_assignedbinid - 1].m_initial_assignment.addAssignment("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
+                                                                                        m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
             }
         }
     }
@@ -241,7 +241,7 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 chargings[i].SetAssignedBinId(chargings[i].m_assignedbinid, chargings[i].m_time, chargings[i].m_charge_energy);
-                m_bins[chargings[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
+                m_bins[chargings[i].m_assignedbinid - 1].m_initial_assignment.addAssignment("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
             }
         }
     }
