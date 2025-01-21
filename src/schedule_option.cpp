@@ -8,7 +8,7 @@
 namespace schedule_planner
 {
     ScheduleOption::ScheduleOption(const int robot_id, const int initial_energy, const int constraint_time, const int max_size)
-        : m_robot_id(robot_id), m_rest_energy(initial_energy), m_constraint_time(constraint_time), max_size(max_size)
+        : m_robot_id(robot_id), m_rest_energy(initial_energy), m_constraint_time(constraint_time), max_size(max_size), m_initial_energy(initial_energy)
     {
     }
     ScheduleOption::~ScheduleOption()
@@ -40,6 +40,46 @@ namespace schedule_planner
             exit(1);
         }
         m_assignment.push_back(std::make_pair(name, id));
+    }
+
+    bool ScheduleOption::addAssignmentWithCheck(const std::string &name, const int id, const int m_item_time, int m_item_energy)
+    {
+        const int item_energy = (name == "charging") ? -m_item_energy : m_item_energy;
+        if ((m_rest_energy - item_energy) < 0)
+        {
+            std::cout << "Rest energy is less than 0." << m_rest_energy << std::endl;
+            return false;
+        }
+        if ((m_total_time + m_item_time) > m_constraint_time)
+        {
+            std::cout << "Total time is more than constraint time." << m_total_time << std::endl;
+            return false;
+        }
+        if ((m_rest_energy - item_energy) > max_size)
+        {
+            std::cout << "Rest energy is more than max size." << m_rest_energy << std::endl;
+            return false;
+        }
+        m_total_time += m_item_time;
+        m_rest_energy -= item_energy;
+        m_assignment.push_back(std::make_pair(name, id));
+        return true;
+    }
+
+    void ScheduleOption::resetAssignment()
+    {
+        m_assignment.clear();
+        m_rest_energy = m_initial_energy;
+        m_total_time = 0;
+    }
+
+    bool ScheduleOption::isIncludeChargingId(const int id) const
+    {
+        return std::any_of(m_assignment.begin(), m_assignment.end(),
+                           [id](const std::pair<std::string, int> &assignment)
+                           {
+                               return assignment.first == "charging" && assignment.second == id;
+                           });
     }
 
     void ScheduleOption::removeChargeAssignment()

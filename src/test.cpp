@@ -124,21 +124,21 @@ namespace gap
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
             schedulePlanTimer.stop();
             const vector<int> initial_occuption_all = gap.updateInitialAllBinary();
-            // m_bins print
-            for (int i = 0; i < gap.m_bins.size(); i++)
-            {
-                gap.m_bins[i].Print();
-            }
-            // m_chargings print
-            for (int i = 0; i < gap.m_chargings.size(); i++)
-            {
-                gap.m_chargings[i].Print();
-            }
-            // m_stations print
-            for (int i = 0; i < gap.m_stations.size(); i++)
-            {
-                gap.m_stations[i].Print();
-            }
+            // // m_bins print
+            // for (int i = 0; i < gap.m_bins.size(); i++)
+            // {
+            //     gap.m_bins[i].Print();
+            // }
+            // // m_chargings print
+            // for (int i = 0; i < gap.m_chargings.size(); i++)
+            // {
+            //     gap.m_chargings[i].Print();
+            // }
+            // // m_stations print
+            // for (int i = 0; i < gap.m_stations.size(); i++)
+            // {
+            //     gap.m_stations[i].Print();
+            // }
             cout << endl;
             exec_result::ExecResult execResult(test_id, itemnum, binnum, gap.constaint_time, gap.m_guaranteed_energy,
                                                gap.m_stations[0].m_capacity, gapForConstraintSizeTimer.elapsedSeconds(), gapForConstraintTimeTimer.elapsedSeconds(), schedulePlanTimer.elapsedSeconds(),

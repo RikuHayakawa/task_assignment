@@ -27,15 +27,20 @@ namespace exec_result
         // モデル内で計算
         std::tuple<int, double, double, double, int> m_initial_result;   // 初期結果(競合数, 標準偏差, 評価値, 平均収容率, 最大収容数)
         std::tuple<int, double, double, double, int> m_scheduled_result; // スケジュール結果(競合数, 標準偏差, 評価値, 平均収容率, 最大収容数)
-        int m_assigned_tasks = 0;                                        // 割り当てられた総タスク数
+        int m_assigned_tasks = 0;                                        // 割り当てられた総タスク数(完了できないタスクを含む)
         double m_initial_charging_average = 0;                           // 充電計画前の平均充電回数
         double m_scheduled_charging_average = 0;                         // 充電計画後の平均充電回数
-        int m_charging_robot_num = 0;                                    // 充電が割り当てられたロボット数
-        double rest_energy_average = 0;                                  // 充電残量の平均
+        double m_initial_rest_energy_average = 0;                        // 充電計画前の平均充電残量
+        double m_scheduled_rest_energy_average = 0;                      // 充電計画後の平均充電残量
+        int m_initial_task_size = 0;                                     // 初期のタスク数
+        int m_scheduled_task_size = 0;                                   // スケジュール後のタスク数
+        int m_initial_task_value = 0;                                    // 初期のタスクの価値
+        int m_scheduled_task_value = 0;                                  // スケジュール後のタスクの価値
 
         void calculateStationOccupation(std::vector<int> occupation_per_time, std::tuple<int, double, double, double, int> &result);
         bool isTestIdExists(const std::string &filename, const std::string &test_id);
-        void outputResultsToFile(const std::string &filename, const std::string &test_id, int m_total_tasks, int m_total_robots, double m_constraint_time, double m_guaranteed_energy, int m_station_capacity, double m_gap_for_constraint_size_time, double m_gap_for_constraint_time, double m_schedule_planner_time, double m_exec_time, const std::vector<int> &m_initial_occupation, const std::vector<int> &m_schedule_occupation, const std::tuple<int, double, double, double, int> &m_initial_result, const std::tuple<int, double, double, double, int> &m_scheduled_result, int m_assigned_tasks, double m_initial_charging_average, double m_scheduled_charging_average, int m_charging_robot_num, double rest_energy_average);
+        void outputResultsToFile(const std::string &filename, const std::string &test_id);
+        void calculateTaskSizeAndValue(gap::CGap &gap_instance);
 
     public:
         ExecResult();

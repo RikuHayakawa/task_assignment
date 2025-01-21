@@ -10,6 +10,7 @@
 #include "knapsack.h"
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -250,6 +251,7 @@ namespace gap
     {
         // m_binsのbaiary optionを計算する
         vector<int> all_binary(constaint_time, 0);
+        vector<int> assigned_binary(constaint_time, 0);
         for (int i = 0; i < m_bins.size(); ++i)
         {
             m_bins[i].m_initial_assignment.m_binary_option = vector<int>(constaint_time, 0);
@@ -268,11 +270,30 @@ namespace gap
                 }
                 else if (m_bins[i].m_initial_assignment.m_assignment[j].first == "charging")
                 {
+                    int available_charging_time = 0;
                     for (int k = 0; k < m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time; ++k)
                     {
                         m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step] = 1;
                         all_binary[baianry_time_step] += 1;
+                        if (assigned_binary[baianry_time_step] + 1 <= m_stations[0].m_capacity)
+                        {
+                            assigned_binary[baianry_time_step] += 1;
+                            available_charging_time += 1;
+                        }
+
                         baianry_time_step++;
+                    }
+                    // check_overlapの最大値がステーションの容量を超えていないか確認
+                    if (m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time != available_charging_time)
+                    {
+                        cout << "Charging time is over the station capacity Id, " << m_bins[i].m_initial_assignment.m_assignment[j].second << ", " << available_charging_time << endl;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_assigned_station_id = m_stations[0].m_id;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time = available_charging_time;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_charge_energy = available_charging_time * m_stations[0].m_charge_efficiency;
+                    }
+                    else
+                    {
+                        m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step - 1] = 0;
                     }
                 }
             }

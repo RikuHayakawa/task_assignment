@@ -22,8 +22,14 @@ namespace exec_result
         calculateStationOccupation(initial_occupation, m_initial_result);
         calculateStationOccupation(schedule_occupation, m_scheduled_result);
 
-        int checkChargingRobot = 0;
         int idleTime = gap_instance->m_bins.size() * gap_instance->constaint_time;
+        // 充電がステーションに割り当てられていないものを含めてカウントするために使用する
+
+        gap::CGap gap_copy = *gap_instance; // コピーコンストラクタを使う
+        gap::CGap *gap_normal = &gap_copy;  // コピーしたオブジェクトのアドレスを渡す
+
+        // 割り当てれなかった充電とそれによって割り当てれなくなったタスクを削除
+        calculateTaskSizeAndValue(*gap_normal);
 
         for (int i = 0; i < gap_instance->m_bins.size(); i++)
         {
@@ -34,29 +40,10 @@ namespace exec_result
             gap_instance->m_bins[i].m_scheduled_assignment.removeChargeAssignment();
             const int scheduledTaskSize = gap_instance->m_bins[i].m_scheduled_assignment.m_assignment.size();
 
-            if (initialAssignmentSize > initialTaskSize)
-            {
-                checkChargingRobot++;
-                // 計画前の充電数をカウント
-                m_initial_charging_average += initialAssignmentSize - initialTaskSize;
-            }
-            if (scheduledAssignmentSize > scheduledTaskSize)
-            {
-                // 充電が割り当てられたロボット数をカウント
-                m_charging_robot_num++;
-                // 計画後の充電数をカウント
-                m_scheduled_charging_average += scheduledAssignmentSize - scheduledTaskSize;
-            }
             if (initialTaskSize != scheduledTaskSize)
             {
                 // タスク数が異なる場合エラー
                 cerr << "Error: Initial assignment and scheduled assignment are different." << endl;
-                exit(1);
-            }
-            if (checkChargingRobot != m_charging_robot_num)
-            {
-                // 充電を行うロボット数が異なる場合エラー
-                cerr << "Error: Charging robot number is different." << endl;
                 exit(1);
             }
             // 割り当てられたタスク数をカウント
@@ -71,9 +58,6 @@ namespace exec_result
                 cerr << "Error: Total time is different." << endl;
             }
 
-            // 充電残量の平均を算出
-            rest_energy_average += gap_instance->m_bins[i].m_scheduled_assignment.m_rest_energy;
-
             if (gap_instance->m_bins[i].m_scheduled_assignment.m_rest_energy < gap_instance->m_guaranteed_energy)
             {
                 // error: 最小充電残量が閾値を超えている場合
@@ -81,9 +65,6 @@ namespace exec_result
                 exit(1);
             }
         }
-        m_initial_charging_average /= gap_instance->m_bins.size();
-        m_scheduled_charging_average /= gap_instance->m_bins.size();
-        rest_energy_average /= gap_instance->m_bins.size();
 
         if (idleTime != 0)
         {
@@ -92,26 +73,7 @@ namespace exec_result
             exit(1);
         }
 
-        outputResultsToFile("output.csv",
-                            test_id,
-                            m_total_tasks,
-                            m_total_robots,
-                            m_constraint_time,
-                            m_guaranteed_energy,
-                            m_station_capacity,
-                            m_gap_for_constraint_size_time,
-                            m_gap_for_constraint_time,
-                            m_schedule_planner_time,
-                            m_exec_time,
-                            m_initial_occupation,
-                            m_schedule_occupation,
-                            m_initial_result,
-                            m_scheduled_result,
-                            m_assigned_tasks,
-                            m_initial_charging_average,
-                            m_scheduled_charging_average,
-                            m_charging_robot_num,
-                            rest_energy_average);
+        outputResultsToFile("output.csv", test_id);
     }
     ExecResult::~ExecResult()
     {
@@ -159,27 +121,92 @@ namespace exec_result
         return false; // No match found
     }
 
+    void ExecResult::calculateTaskSizeAndValue(gap::CGap &gap_instance)
+    {
+        // create copy of gap_instance
+        gap::CGap gap_copy = gap_instance;
+        const gap::CGap *gap_normal = &gap_copy;
+
+        for (int i = 0; i < gap_normal->m_bins.size(); i++)
+        {
+            gap::CBin &bin = gap_instance.m_bins[i];
+
+            bin.m_initial_assignment.resetAssignment();
+            for (int j = 0; j < gap_normal->m_bins[i].m_initial_assignment.m_assignment.size(); j++)
+            {
+                if (gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].first == "task")
+                {
+                    // task
+                    bool result = bin.m_initial_assignment.addAssignmentWithCheck(gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].first, gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second,
+                                                                                  gap_normal->m_timematrix[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1],
+                                                                                  gap_normal->m_sizematrix[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1]);
+                    if (result)
+                    {
+                        // アイテムの評価値を計算
+                        m_initial_task_value += gap_instance.m_profitmatrix[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1];
+                        // 総数をカウント
+
+                        m_initial_task_size++;
+                    }
+                }
+                else if (gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].first == "charging")
+                {
+                    // charging
+                    cout << "Charging time is over the station capacity Id, " << gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second << ", " << gap_normal->m_chargings[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time << endl;
+                    bin.m_initial_assignment.addAssignmentWithCheck(gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].first, gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second,
+                                                                    gap_normal->m_chargings[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time,
+                                                                    gap_instance.GetMinChargeEfficiency() * gap_normal->m_chargings[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time);
+
+                    if (gap_normal->m_chargings[gap_normal->m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time > 0)
+                    {
+                        m_initial_charging_average++;
+                    }
+                }
+            }
+
+            // schedule assignment も同様に計算
+            bin.m_scheduled_assignment.resetAssignment();
+            for (int j = 0; j < gap_normal->m_bins[i].m_scheduled_assignment.m_assignment.size(); j++)
+            {
+                if (gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].first == "task")
+                {
+                    // task
+                    bool result = bin.m_scheduled_assignment.addAssignmentWithCheck(gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].first, gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second,
+                                                                                    gap_normal->m_timematrix[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1],
+                                                                                    gap_normal->m_sizematrix[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1]);
+                    if (result)
+                    {
+                        // アイテムの評価値を計算
+                        m_scheduled_task_value += gap_instance.m_profitmatrix[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1][gap_normal->m_bins[i].m_id - 1];
+                        // 総数をカウント
+                        m_scheduled_task_size++;
+                    }
+                }
+                else if (gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].first == "charging")
+                {
+                    // charging
+                    bin.m_scheduled_assignment.addAssignmentWithCheck(gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].first, gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second,
+                                                                      gap_normal->m_chargings[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1].m_time,
+                                                                      gap_instance.GetMinChargeEfficiency() * gap_normal->m_chargings[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1].m_time);
+                    if (gap_normal->m_chargings[gap_normal->m_bins[i].m_scheduled_assignment.m_assignment[j].second - 1].m_time > 0)
+                    {
+                        m_scheduled_charging_average++;
+                    }
+                }
+            }
+
+            m_initial_rest_energy_average += gap_instance.m_bins[i].m_initial_assignment.m_rest_energy;
+            m_scheduled_rest_energy_average += gap_instance.m_bins[i].m_scheduled_assignment.m_rest_energy;
+        }
+
+        m_initial_rest_energy_average /= gap_instance.m_bins.size();
+        m_scheduled_rest_energy_average /= gap_instance.m_bins.size();
+        m_initial_charging_average /= gap_instance.m_bins.size();
+        m_scheduled_charging_average /= gap_instance.m_bins.size();
+    }
+
     void ExecResult::outputResultsToFile(
-        const std::string &filename,
-        const std::string &test_id, // UUID for Test ID
-        int m_total_tasks,
-        int m_total_robots,
-        double m_constraint_time,
-        double m_guaranteed_energy,
-        int m_station_capacity,
-        double m_gap_for_constraint_size_time,
-        double m_gap_for_constraint_time,
-        double m_schedule_planner_time,
-        double m_exec_time,
-        const std::vector<int> &m_initial_occupation,
-        const std::vector<int> &m_schedule_occupation,
-        const std::tuple<int, double, double, double, int> &m_initial_result,
-        const std::tuple<int, double, double, double, int> &m_scheduled_result,
-        int m_assigned_tasks,
-        double m_initial_charging_average,
-        double m_scheduled_charging_average,
-        int m_charging_robot_num,
-        double rest_energy_average)
+        const std::string &filename, const std::string &test_id)
     {
         if (isTestIdExists(filename, test_id))
         {
@@ -230,10 +257,15 @@ namespace exec_result
                  << "Fase2: 平均収容率,"
                  << "Fase2: 最大収容数,"
                  << "割り当てタスク数,"
-                 << "Fase1: 充電平均,"
-                 << "Fase2: 充電平均,"
-                 << "充電ロボット数,"
-                 << "残りエネルギー平均" << "\r\n";
+                 << "計画前の平均充電回数,"
+                 << "計画後の平均充電回数,"
+                 << "計画前の充電残量平均,"
+                 << "計画後の充電残量平均,"
+                 << "計画前のタスク数,"
+                 << "計画後のタスク数,"
+                 << "計画前のタスクの価値,"
+                 << "計画後のタスクの価値,"
+                 << std::endl;
         }
 
         // Write data to file
@@ -259,8 +291,11 @@ namespace exec_result
              << std::get<3>(m_scheduled_result) << ","
              << std::get<4>(m_scheduled_result) << ","
              << m_assigned_tasks << "," << m_initial_charging_average << ","
-             << m_scheduled_charging_average << "," << m_charging_robot_num << ","
-             << rest_energy_average << std::endl;
+             << m_scheduled_charging_average << "," << m_initial_rest_energy_average << ","
+             << m_scheduled_rest_energy_average << ","
+             << m_initial_task_size << "," << m_scheduled_task_size << ","
+             << m_initial_task_value << "," << m_scheduled_task_value << ","
+             << std::endl;
 
         file.close();
         std::cout << "Results written to " << filename << std::endl;
@@ -296,7 +331,11 @@ namespace exec_result
         std::cout << "Assigned tasks: " << m_assigned_tasks << std::endl;
         std::cout << "Initial charging average: " << m_initial_charging_average << std::endl;
         std::cout << "Scheduled charging average: " << m_scheduled_charging_average << std::endl;
-        std::cout << "Charging robot num: " << m_charging_robot_num << std::endl;
-        std::cout << "Rest energy average: " << rest_energy_average << std::endl;
+        std::cout << "Initial rest energy average: " << m_initial_rest_energy_average << std::endl;
+        std::cout << "Scheduled rest energy average: " << m_scheduled_rest_energy_average << std::endl;
+        std::cout << "Initial task size: " << m_initial_task_size << std::endl;
+        std::cout << "Scheduled task size: " << m_scheduled_task_size << std::endl;
+        std::cout << "Initial task value: " << m_initial_task_value << std::endl;
+        std::cout << "Scheduled task value: " << m_scheduled_task_value << std::endl;
     }
 }
