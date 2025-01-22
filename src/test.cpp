@@ -49,6 +49,8 @@ namespace gap
             vector<int> initial_sizes(binnum);
             file >> gap.constaint_time;
             file >> gap.m_guaranteed_energy;
+            map<int, int> m_charge_energy_for_guarantee;
+
             for (int i = 0; i < binnum; ++i)
             {
                 file >> initial_sizes[i];
@@ -56,7 +58,7 @@ namespace gap
                 // 充電が必要な場合
                 if ((initial_sizes[i] - gap.m_guaranteed_energy) < 0)
                 {
-                    gap.m_charge_time_for_guaranteed_energy[i + 1] = -(initial_sizes[i] - gap.m_guaranteed_energy);
+                    m_charge_energy_for_guarantee[i + 1] = -(initial_sizes[i] - gap.m_guaranteed_energy);
                 }
             }
             vector<int> max_sizes(binnum);
@@ -64,17 +66,17 @@ namespace gap
             {
                 file >> max_sizes[i];
             }
-            for (int i = 0; i < binnum; ++i)
-            {
-                CBin bin(i + 1, sizes[i], max_sizes[i], initial_sizes[i]);
-                gap.AddBin(bin);
-            }
             for (int i = 0; i < stationnum; ++i)
             {
                 int charge_efficiency, capacity;
                 file >> charge_efficiency >> capacity;
                 CStation station(i + 1, charge_efficiency, capacity, 0, 0, vector<int>(gap.constaint_time, 0));
                 gap.AddStation(station);
+            }
+            for (int i = 0; i < binnum; ++i)
+            {
+                CBin bin(i + 1, sizes[i], max_sizes[i], initial_sizes[i], gap.constaint_time, m_charge_energy_for_guarantee[i + 1] / gap.GetMinChargeEfficiency());
+                gap.AddBin(bin);
             }
             for (int i = 0; i < itemnum; ++i)
             {
@@ -121,26 +123,26 @@ namespace gap
             schedulePlanTimer.start();
             schedule_planner::SchedulePlanner schedulePlanner(&gap);
             schedulePlanTimer.stop();
-            const vector<int> initial_occuption_all = gap.updateInitialAllBainary();
-            // m_bins print
-            for (int i = 0; i < gap.m_bins.size(); i++)
-            {
-                gap.m_bins[i].Print();
-            }
-            // m_chargings print
-            for (int i = 0; i < gap.m_chargings.size(); i++)
-            {
-                gap.m_chargings[i].Print();
-            }
-            // m_stations print
-            for (int i = 0; i < gap.m_stations.size(); i++)
-            {
-                gap.m_stations[i].Print();
-            }
+            const vector<int> initial_occuption_all = gap.updateInitialAllBinary();
+            // // m_bins print
+            // for (int i = 0; i < gap.m_bins.size(); i++)
+            // {
+            //     gap.m_bins[i].Print();
+            // }
+            // // m_chargings print
+            // for (int i = 0; i < gap.m_chargings.size(); i++)
+            // {
+            //     gap.m_chargings[i].Print();
+            // }
+            // // m_stations print
+            // for (int i = 0; i < gap.m_stations.size(); i++)
+            // {
+            //     gap.m_stations[i].Print();
+            // }
             cout << endl;
             exec_result::ExecResult execResult(test_id, itemnum, binnum, gap.constaint_time, gap.m_guaranteed_energy,
                                                gap.m_stations[0].m_capacity, gapForConstraintSizeTimer.elapsedSeconds(), gapForConstraintTimeTimer.elapsedSeconds(), schedulePlanTimer.elapsedSeconds(),
-                                               gapForConstraintSizeTimer.elapsedSeconds() + gapForConstraintTimeTimer.elapsedSeconds() + schedulePlanTimer.elapsedSeconds(), initial_occuption_all, schedulePlanner.m_occupation_all);
+                                               gapForConstraintSizeTimer.elapsedSeconds() + gapForConstraintTimeTimer.elapsedSeconds() + schedulePlanTimer.elapsedSeconds(), initial_occuption_all, schedulePlanner.m_occupation_all, &gap);
             execResult.Print();
 
             ++casenum;

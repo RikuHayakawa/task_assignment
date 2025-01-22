@@ -37,7 +37,6 @@ namespace gap
         int constaint_time;
         int m_guaranteed_energy;
         // id: bin id, value: charge time
-        map<int, int> m_charge_time_for_guaranteed_energy;
 
     public:
         CGap();
@@ -55,7 +54,7 @@ namespace gap
         void PrintAssignment(); // The result is stored in each item object
         void SetAssignmentForItems(vector<CItem> &items);
         void SetAssignmentForChargings(vector<CCharging> &chargings);
-        vector<int> updateInitialAllBainary();
+        vector<int> updateInitialAllBinary();
         int GetMinChargeEfficiency();
     };
 };

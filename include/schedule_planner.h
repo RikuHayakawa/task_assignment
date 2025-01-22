@@ -18,19 +18,15 @@ namespace schedule_planner
         SchedulePlanner();
         ~SchedulePlanner();
         SchedulePlanner(gap::CGap *gap_instance);
-        void displayScheduleOptions() const;
         std::tuple<int, double, double> calculateValue(const std::vector<int> &charge, int stationCapacity);
 
     private:
-        std::pair<bool, std::vector<ScheduleOption>> createScheduleOptionsForRobot(const std::vector<std::pair<int, int>> &tasks, const int robot_id, const int constant_time, const int charging_time);
-        std::map<int, std::vector<std::vector<std::pair<std::string, int>>>> generateTaskGroups(const std::vector<std::pair<int, int>> &tasks);
-
-        bool isOvercharging(const int reset_energy, const int charging_time, const int robot_id);
-        void solve(int stationCapacity, int timeSteps);
-        void setSelectedOptionForRobot();
-        void assignChargingToStation(const ScheduleOption &selected_option, const int charging_id);
-        void displayPreScheduleOptions() const;
-        void displaySelectedOption() const;
+        void solve(int stationCapacity, int timeSteps, std::map<int, std::vector<std::vector<int>>> &binaryOptions);
+        void setAssignment();
+        void assignChargingToStation(const ScheduleOption &selected_option, const std::vector<int> charging_ids);
+        void generateBinaryOptions(int timeIndex, int remainingCharges, int remainExecTaskTime, int currentTaskIndex, int restEnergy, int maxEnergy, int robotId,
+                                   std::vector<int> &currentBinaryOption,
+                                   std::vector<std::vector<int>> &binaryOptions, const std::vector<int> &taskIds);
     };
 };
 #endif

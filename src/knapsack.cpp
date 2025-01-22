@@ -71,7 +71,7 @@ namespace gap
                     int new_profit = d[i - 1][j - m_items[i - 1].m_energy].first + m_items[i - 1].m_profit;
                     int new_time = d[i - 1][j - m_items[i - 1].m_energy].second + m_items[i - 1].m_workigtime;
 
-                    if (new_profit > d[i - 1][j].first && new_time <= constraint_time)
+                    if (new_profit > d[i - 1][j].first && new_time <= (constraint_time - m_bin.m_charge_time_for_guarantee))
                     {
                         d[i][j] = {new_profit, new_time};
                     }
@@ -101,19 +101,24 @@ namespace gap
     }
 
     // todo: ロボットの作業時間の制約を満たすように、DPを行う。ただし、bin.sizeの制約はない。m_sizematrixで消費した分だけchargingを追加する。
-    void CKnapsack::DpUnderConstraintTime(const int constraint_time, vector<int> &itemSize)
+    void CKnapsack::DpUnderConstraintTime(const int constraint_time, const int guaranteed_energy, const int charge_efficiency, vector<int> &itemSize)
     {
         // 制約時間が既存の作業時間を下回る場合、エラーを出力して処理を終了
-        if (constraint_time < m_bin.m_total_time)
+        if (constraint_time < m_bin.m_initial_assignment.m_total_time)
         {
             std::cerr << "Error: Constraint time (" << constraint_time
                       << ") is less than or equal to the total assigned time ("
-                      << m_bin.m_total_time << "). DP cannot proceed." << std::endl;
+                      << m_bin.m_initial_assignment.m_total_time << "). DP cannot proceed." << std::endl;
             m_maxprofit = 0;
             return;
         }
 
-        int max_time = constraint_time - m_bin.m_total_time;
+        int max_time = constraint_time - m_bin.m_initial_assignment.m_total_time;
+        if (m_bin.m_initial_assignment.m_rest_energy < guaranteed_energy)
+        {
+            max_time -= (guaranteed_energy - m_bin.m_initial_assignment.m_rest_energy) / charge_efficiency;
+            cout << "max_time: " << max_time << endl;
+        }
         vector<vector<int>> d(m_items.size() + 1, vector<int>(max_time + 1, 0));
         for (int i = 1; i <= m_items.size(); ++i)
         {

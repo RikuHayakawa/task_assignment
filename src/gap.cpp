@@ -10,6 +10,7 @@
 #include "knapsack.h"
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -124,7 +125,7 @@ namespace gap
                 itemSizeIncludeCharging[i] = m_rest_items[i].m_workigtime + charging_time;
                 m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][j] = charging_time;
             }
-            knapsack.DpUnderConstraintTime(constaint_time, itemSizeIncludeCharging);
+            knapsack.DpUnderConstraintTime(constaint_time, m_guaranteed_energy, GetMinChargeEfficiency(), itemSizeIncludeCharging);
             // Copy the knapsack results back to gap
             for (int i = 0; i < m_rest_items.size(); ++i)
             {
@@ -145,22 +146,22 @@ namespace gap
                 }
             }
         }
-        // 割り当てられたアイテムから充電時間を計算する
-        vector<int> chargingTimes(m_bins.size(), 0);
-        for (int i = 0; i < m_rest_items.size(); ++i)
-        {
-            if (m_rest_items[i].m_assignedbinid != -1)
-            {
-                chargingTimes[m_rest_items[i].m_assignedbinid - 1] += m_necessary_charge_time_matrix[m_rest_items[i].m_id - 1][m_rest_items[i].m_assignedbinid - 1];
-            }
-        }
         // m_rest_itemsを割り当てる前に、chargingを割り当てる。ここでchargingはbinにすでに割り当てられているitemsとm_rest_itemsの間に割り当てられる。
         int charging_id = 1;
         for (int i = 0; i < m_bins.size(); ++i)
         {
-            if (chargingTimes[i] > 0)
+            int task_total_time = 0;
+            for (int j = 0; j < m_items.size(); ++j)
             {
-                CCharging charging(charging_id, chargingTimes[i], chargingTimes[i] * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
+                if (m_items[j].m_assignedbinid == m_bins[i].m_id)
+                {
+                    task_total_time += m_timematrix[m_items[j].m_id - 1][m_items[j].m_assignedbinid - 1];
+                }
+            }
+            if (task_total_time < constaint_time)
+            {
+
+                CCharging charging(charging_id, constaint_time - task_total_time, (constaint_time - task_total_time) * GetMinChargeEfficiency(), m_bins[i].m_id, -1);
                 AddCharging(charging);
                 charging_id++;
             }
@@ -185,8 +186,8 @@ namespace gap
             cout << m_stations[i].m_id << "," << m_stations[i].m_charge_efficiency << " ";
         cout << endl;
         cout << "Charge time for guaranteed energy:" << endl;
-        for (auto it = m_charge_time_for_guaranteed_energy.begin(); it != m_charge_time_for_guaranteed_energy.end(); ++it)
-            cout << it->first << "," << it->second << endl;
+        for (int i = 0; i < m_bins.size(); ++i)
+            cout << m_bins[i].m_charge_time_for_guarantee << " ";
         cout << endl;
         cout << "Time matrix:" << endl;
         for (int i = 0; i < m_timematrix.size(); ++i)
@@ -228,8 +229,8 @@ namespace gap
             if (items[i].m_assignedbinid != -1)
             {
                 m_items[items[i].m_id - 1].SetAssignedBinId(items[i].m_assignedbinid, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1], m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
-                m_bins[items[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
-                                                                               m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
+                m_bins[items[i].m_assignedbinid - 1].m_initial_assignment.addAssignment("task", items[i].m_id, m_timematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1],
+                                                                                        m_sizematrix[items[i].m_id - 1][items[i].m_assignedbinid - 1]);
             }
         }
     }
@@ -241,15 +242,16 @@ namespace gap
             if (chargings[i].m_assignedbinid != -1)
             {
                 chargings[i].SetAssignedBinId(chargings[i].m_assignedbinid, chargings[i].m_time, chargings[i].m_charge_energy);
-                m_bins[chargings[i].m_assignedbinid - 1].addAssignmentAndUpdateBin("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
+                m_bins[chargings[i].m_assignedbinid - 1].m_initial_assignment.addAssignment("charging", chargings[i].m_id, chargings[i].m_time, chargings[i].m_charge_energy);
             }
         }
     }
 
-    vector<int> CGap::updateInitialAllBainary()
+    vector<int> CGap::updateInitialAllBinary()
     {
         // m_binsのbaiary optionを計算する
         vector<int> all_binary(constaint_time, 0);
+        vector<int> assigned_binary(constaint_time, 0);
         for (int i = 0; i < m_bins.size(); ++i)
         {
             m_bins[i].m_initial_assignment.m_binary_option = vector<int>(constaint_time, 0);
@@ -268,11 +270,30 @@ namespace gap
                 }
                 else if (m_bins[i].m_initial_assignment.m_assignment[j].first == "charging")
                 {
+                    int available_charging_time = 0;
                     for (int k = 0; k < m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time; ++k)
                     {
                         m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step] = 1;
                         all_binary[baianry_time_step] += 1;
+                        if (assigned_binary[baianry_time_step] + 1 <= m_stations[0].m_capacity)
+                        {
+                            assigned_binary[baianry_time_step] += 1;
+                            available_charging_time += 1;
+                        }
+
                         baianry_time_step++;
+                    }
+                    // check_overlapの最大値がステーションの容量を超えていないか確認
+                    if (m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time != available_charging_time)
+                    {
+                        cout << "Charging time is over the station capacity Id, " << m_bins[i].m_initial_assignment.m_assignment[j].second << ", " << available_charging_time << endl;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_assigned_station_id = m_stations[0].m_id;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_time = available_charging_time;
+                        m_chargings[m_bins[i].m_initial_assignment.m_assignment[j].second - 1].m_charge_energy = available_charging_time * m_stations[0].m_charge_efficiency;
+                    }
+                    else
+                    {
+                        m_bins[i].m_initial_assignment.m_binary_option[baianry_time_step - 1] = 0;
                     }
                 }
             }
